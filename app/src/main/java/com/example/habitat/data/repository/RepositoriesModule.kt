@@ -1,0 +1,19 @@
+package com.example.habitat.data.repository
+
+import com.example.habitat.data.room.HabitsDao
+import com.example.habitat.domain.repository.HabitsRepository
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+
+@Module
+@InstallIn(SingletonComponent::class)
+object RepositoriesModule {
+
+    @Provides
+    fun providesHabitRepository(habitsDao: HabitsDao): HabitsRepository {
+        return HabitsRepositoryImpl(habitsDao = habitsDao)
+    }
+
+}

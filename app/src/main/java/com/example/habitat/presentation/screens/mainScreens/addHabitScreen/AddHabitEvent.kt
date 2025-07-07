@@ -8,5 +8,7 @@ sealed class AddHabitEvent {
     class SelectDay(val day: DayOfWeek): AddHabitEvent()
     class DeselectDay(val day: DayOfWeek): AddHabitEvent()
     class SelectHabitCategory(val habitCategory: HabitsCategories): AddHabitEvent()
+    class SetRemindTime(val hours: Int, val minutes: Int): AddHabitEvent()
+    class ChangeWeekRepetitionValue(val value: Boolean): AddHabitEvent()
     object AddHabit: AddHabitEvent()
 }

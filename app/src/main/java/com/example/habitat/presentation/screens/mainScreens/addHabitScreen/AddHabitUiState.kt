@@ -5,6 +5,9 @@ import java.time.DayOfWeek
 
 data class AddHabitUiState(
     val habitDescription: String = "",
-    val selectedDays: List<DayOfWeek> = emptyList(),
     val habitCategory: HabitsCategories? = null,
+    val selectedDays: List<DayOfWeek> = emptyList(),
+    val repeatEveryWeek: Boolean = false,
+    val remindTimeSelectedHours: Int = 0,
+    val remindTimeSelectedMinutes: Int = 0,
 )

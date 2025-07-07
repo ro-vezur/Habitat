@@ -1,6 +1,5 @@
 package com.example.habitat.ui.theme.responsiveLayout
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
@@ -37,13 +36,19 @@ val phoneLayout = ResponsiveLayout(
     buttonHeight1 = 50.dp,
     buttonHeight2 = 65.dp,
     checkBoxSize = 35.dp,
+    switcherButtonWidth = 60.dp,
+    switcherButtonHeight = 34.dp,
+    switcherPadding = 5.dp,
     inputTextFieldHeight = 60.dp,
     maxDropDownMenuHeight = 240.dp,
     topBarHeight = 100.dp,
 
     periodicityDayCardSize = 38.dp,
-    selectHabitButtonWidth = 155.dp,
-    selectHabitButtonHeight = 42.dp,
+    addHabitScreenButtonsWidth = 160.dp,
+    addHabitScreenButtonHeight = 45.dp,
+    timePickerCarouselHeight = 180.dp,
+    doneTimePickerButtonWidth = 120.dp,
+    doneTimePickerButtonHeight = 40.dp,
 
     iconSmall = 22.dp,
     iconMedium = 28.dp,
@@ -75,13 +80,19 @@ val tabletLayout = ResponsiveLayout(
     buttonHeight1 = 55.dp,
     buttonHeight2 = 75.dp,
     checkBoxSize = 40.dp,
+    switcherButtonWidth = 75.dp,
+    switcherButtonHeight = 35.dp,
+    switcherPadding = 5.dp,
     inputTextFieldHeight = 55.dp,
     maxDropDownMenuHeight = 150.dp,
     topBarHeight = 80.dp,
 
     periodicityDayCardSize = 42.dp,
-    selectHabitButtonWidth = 110.dp,
-    selectHabitButtonHeight = 40.dp,
+    addHabitScreenButtonsWidth = 110.dp,
+    addHabitScreenButtonHeight = 40.dp,
+    timePickerCarouselHeight = 180.dp,
+    doneTimePickerButtonWidth = 110.dp,
+    doneTimePickerButtonHeight = 40.dp,
 
     iconSmall = 20.dp,
     iconMedium = 28.dp,
@@ -113,13 +124,19 @@ val expandedLayout = ResponsiveLayout(
     buttonHeight1 = 65.dp,
     buttonHeight2 = 85.dp,
     checkBoxSize = 40.dp,
+    switcherButtonWidth = 75.dp,
+    switcherButtonHeight = 35.dp,
+    switcherPadding = 5.dp,
     inputTextFieldHeight = 50.dp,
     maxDropDownMenuHeight = 150.dp,
     topBarHeight = 80.dp,
 
     periodicityDayCardSize = 42.dp,
-    selectHabitButtonWidth = 125.dp,
-    selectHabitButtonHeight = 45.dp,
+    addHabitScreenButtonsWidth = 125.dp,
+    addHabitScreenButtonHeight = 45.dp,
+    timePickerCarouselHeight = 180.dp,
+    doneTimePickerButtonWidth = 110.dp,
+    doneTimePickerButtonHeight = 40.dp,
 
     iconSmall = 20.dp,
     iconMedium = 30.dp,

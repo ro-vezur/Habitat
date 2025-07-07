@@ -1,6 +1,5 @@
 package com.example.habitat.ui.theme.responsiveLayout
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.Dp
 
 data class ResponsiveLayout(
@@ -20,13 +19,19 @@ data class ResponsiveLayout(
     val buttonHeight1: Dp,
     val buttonHeight2: Dp,
     val checkBoxSize: Dp,
+    val switcherButtonWidth: Dp,
+    val switcherButtonHeight: Dp,
+    val switcherPadding: Dp,
     val inputTextFieldHeight: Dp,
     val maxDropDownMenuHeight: Dp,
     val topBarHeight: Dp,
 
     val periodicityDayCardSize: Dp,
-    val selectHabitButtonWidth: Dp,
-    val selectHabitButtonHeight: Dp,
+    val addHabitScreenButtonsWidth: Dp,
+    val addHabitScreenButtonHeight: Dp,
+    val timePickerCarouselHeight: Dp,
+    val doneTimePickerButtonWidth: Dp,
+    val doneTimePickerButtonHeight: Dp,
 
     val iconSmall: Dp,
     val iconMedium: Dp,

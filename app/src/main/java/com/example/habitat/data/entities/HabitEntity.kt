@@ -22,7 +22,7 @@ data class HabitEntity(
         return Habit(
             id = id,
             description = description,
-            category = HabitsCategories.entries.find { it.name == category } ?: HabitsCategories.PRODUCTIVITY,
+            category = HabitsCategories.entries.find { it.name == category },
             remindTime = remindTime,
             periodicity = periodicity.map { dayNameWhenRepeat -> DayOfWeek.entries.find { dayOfWeek -> dayOfWeek.name == dayNameWhenRepeat} ?: DayOfWeek.MONDAY },
             repeatEveryWeek = repeatEveryWeek,

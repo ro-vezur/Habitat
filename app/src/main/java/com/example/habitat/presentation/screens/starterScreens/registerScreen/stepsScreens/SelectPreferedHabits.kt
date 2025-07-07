@@ -140,7 +140,6 @@ private fun HabitCard(
                 },
             imageVector = habitCategory.icon,
             contentDescription = "habit icon",
-        //    tint = contentColor
         )
 
         Text(

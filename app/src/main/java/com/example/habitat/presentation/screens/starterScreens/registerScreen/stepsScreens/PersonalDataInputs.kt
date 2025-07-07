@@ -1,7 +1,6 @@
 package com.example.habitat.presentation.screens.starterScreens.registerScreen.stepsScreens
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.habitat.presentation.commonComponents.InteractiveFields.CustomTextInputField
 import com.example.habitat.presentation.screens.starterScreens.registerScreen.RegisterEvent
-import com.example.habitat.presentation.screens.starterScreens.registerScreen.components.SkipProceedButtons
 import com.example.habitat.ui.theme.materialThemeExtensions.responsiveLayout
 
 @Composable

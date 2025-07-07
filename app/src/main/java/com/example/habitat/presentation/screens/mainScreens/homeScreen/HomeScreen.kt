@@ -1,13 +1,12 @@
 package com.example.habitat.presentation.screens.mainScreens.homeScreen
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FiniteAnimationSpec
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,21 +43,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.habitat.datePickerVisibilityAnimationSpec
 import com.example.habitat.domain.entities.Habit
 import com.example.habitat.enums.HabitsCategories
 import com.example.habitat.helpers.TimeHelper
 import com.example.habitat.presentation.ScreensRoutes
-import com.example.habitat.presentation.commonComponents.buttons.CustomCheckBox
+import com.example.habitat.presentation.commonComponents.CustomCheckBox
 import com.example.habitat.ui.theme.HabitatTheme
+import com.example.habitat.ui.theme.materialThemeExtensions.iconColor
 import com.example.habitat.ui.theme.materialThemeExtensions.responsiveLayout
 import com.example.habitat.ui.theme.materialThemeExtensions.textColor
 
-private val datePickerVisibilityAnimationSpec: FiniteAnimationSpec<IntOffset> = tween(
-    durationMillis = 350
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,9 +72,13 @@ fun HomeScreen(
     var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = datePickerState.selectedDateMillis) {
+        val localDate = TimeHelper.createLocalDateOfTimestamp(datePickerState.selectedDateMillis ?: 0)
+
         executeEvent(HomeEvent.SelectNewDate(newDateMillis = datePickerState.selectedDateMillis ?: 0))
         executeEvent(HomeEvent.FetchHabitsByDate(
-            date = TimeHelper.createLocalDateOfTimestamp(datePickerState.selectedDateMillis ?: 0))
+            day = localDate.dayOfWeek.name,
+            dateMillis = datePickerState.selectedDateMillis ?: 0,
+            )
         )
     }
 
@@ -163,10 +164,7 @@ private fun TopDateBar(
             onClick = {
                 onDateClick()
             },
-            contentPadding = PaddingValues(
-                horizontal = MaterialTheme.responsiveLayout.paddingSmall,
-                vertical = MaterialTheme.responsiveLayout.paddingSmall
-            )
+            contentPadding = PaddingValues(MaterialTheme.responsiveLayout.paddingSmall)
         ) {
             Text(
                 text = "${TimeHelper.getDayOfWeekNameFromMillis(selectedDateMillis)}, " +
@@ -211,7 +209,15 @@ private fun HabitsList(
             ) { habit ->
                 HabitCard(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .border(
+                            width = MaterialTheme.responsiveLayout.border1,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1)
+                        )
+                        .padding(
+                            MaterialTheme.responsiveLayout.paddingSmall
+                        ),
                     habit = habit,
                     onCheck = { updateHabitStatus(habit.id,!habit.isCompleted) }
                 )
@@ -255,7 +261,7 @@ private fun HabitsList(
                                 .size(MaterialTheme.responsiveLayout.paddingMedium),
                             imageVector = Icons.Default.Add,
                             contentDescription = "add task",
-                            tint = MaterialTheme.colorScheme.textColor
+                            tint = MaterialTheme.colorScheme.iconColor
                         )
                     }
                 }
@@ -274,12 +280,47 @@ private fun HabitCard(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = habit.description,
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.W500
-        )
+        Column {
+            Text(
+                text = habit.description,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.W500
+            )
+
+            Row(
+                modifier = Modifier
+                    .padding(top = MaterialTheme.responsiveLayout.spacingMedium),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.responsiveLayout.paddingSmall)
+            ) {
+                habit.category?.let { category ->
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1))
+                            .background(MaterialTheme.colorScheme.secondary)
+                            .padding(MaterialTheme.responsiveLayout.spacingSmall)
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .size(MaterialTheme.responsiveLayout.iconSmall),
+                            imageVector = category.icon,
+                            contentDescription = "category icon",
+                            tint = MaterialTheme.colorScheme.iconColor
+                        )
+                    }
+                }
+
+                Text(
+                    modifier = Modifier,
+                    text = TimeHelper.formatDateFromMillis(millis = habit.remindTime, dateFormat = TimeHelper.DateFormats.HH_MM),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.W500
+                )
+            }
+        }
+
 
         Spacer(Modifier.weight(1f))
 

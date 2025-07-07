@@ -33,19 +33,19 @@ class HomeViewModel @Inject constructor(
 
     fun executeEvent(event: HomeEvent) = viewModelScope.launch {
         when(event) {
-            is HomeEvent.FetchHabitsByDate -> changeHabitsDate(event.date)
+            is HomeEvent.FetchHabitsByDate -> changeHabitsDate(event.day,event.dateMillis)
             is HomeEvent.UpdateHabitStatus -> updateHabitStatus(event.id,event.status)
             is HomeEvent.SelectNewDate -> selectNewDate(event.newDateMillis)
         }
     }
 
-    private fun changeHabitsDate(date: LocalDate) {
+    private fun changeHabitsDate(day: String,dateMillis: Long) {
         fetchHabitsJob.cancel()
-        fetchHabitsJob = fetchHabitsByDate(date)
+        fetchHabitsJob = fetchHabitsByDate(day,dateMillis)
     }
 
-    private fun fetchHabitsByDate(date: LocalDate) = viewModelScope.launch(Dispatchers.IO) {
-        val fetchedHabits = habitsRepository.getHabitsByDate(date)
+    private fun fetchHabitsByDate(day: String,dateMillis: Long) = viewModelScope.launch(Dispatchers.IO) {
+        val fetchedHabits = habitsRepository.getHabitsByDate(day, dateMillis)
 
         fetchedHabits.collectLatest { habits ->
             Log.d("habits",habits.toString())

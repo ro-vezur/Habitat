@@ -13,7 +13,7 @@ class HabitsRepositoryImpl @Inject constructor(
 ): HabitsRepository {
     override suspend fun insertHabit(habit: Habit) = habitsDao.insertHabit(habit.toEntity())
 
-    override suspend fun getHabitsByDate(day: String, dateMillis: Long): Flow<List<Habit>> {
+    override suspend fun getActiveHabits(day: String, dateMillis: Long): Flow<List<Habit>> {
         val weekBounds = TimeHelper.getWeekBoundsFromMillis(dateMillis = dateMillis)
         return habitsDao.getHabitsByDayOfWeek(
             day = day,
@@ -24,4 +24,5 @@ class HabitsRepositoryImpl @Inject constructor(
 
     override suspend fun updateHabitStatus(id: Int, status: Boolean) = habitsDao.updateHabitStatus(id,status)
 
+    override suspend fun updateHabit(habit: Habit) = habitsDao.updateHabit(habit.toEntity())
 }

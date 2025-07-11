@@ -88,8 +88,6 @@ class AddHabitViewModel @Inject constructor(
                 minutes = remindTimeSelectedMinutes
             )
 
-            currentTimeMillis()
-
             val habit = Habit(
                 id = 0,
                 description = habitDescription,

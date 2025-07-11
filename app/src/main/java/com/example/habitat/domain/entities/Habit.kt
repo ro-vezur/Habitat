@@ -2,8 +2,10 @@ package com.example.habitat.domain.entities
 
 import com.example.habitat.data.entities.HabitEntity
 import com.example.habitat.enums.HabitsCategories
+import kotlinx.serialization.Serializable
 import java.time.DayOfWeek
 
+@Serializable
 data class Habit(
     val id: Int,
     val description: String = "",

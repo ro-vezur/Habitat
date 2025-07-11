@@ -1,5 +1,6 @@
 package com.example.habitat.presentation.screens.mainScreens.homeScreen
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -217,7 +218,18 @@ private fun HabitsList(
                         )
                         .padding(
                             MaterialTheme.responsiveLayout.paddingSmall
-                        ),
+                        )
+                        .clickable {
+                            navController.navigate(ScreensRoutes.DetailedHabit.createRoute(habit = habit)) {
+                                navController.graph.startDestinationRoute?.let { route ->
+                                    popUpTo(route) {
+                                        saveState = true
+                                    }
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
                     habit = habit,
                     onCheck = { updateHabitStatus(habit.id,!habit.isCompleted) }
                 )
@@ -226,6 +238,7 @@ private fun HabitsList(
             item {
                 Row(
                     modifier = Modifier
+                        .padding(bottom = MaterialTheme.responsiveLayout.paddingSmall)
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

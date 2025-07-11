@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habitat.domain.repository.HabitsRepository
-import com.example.habitat.helpers.TimeHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -14,7 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,10 +43,9 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun fetchHabitsByDate(day: String,dateMillis: Long) = viewModelScope.launch(Dispatchers.IO) {
-        val fetchedHabits = habitsRepository.getHabitsByDate(day, dateMillis)
+        val fetchedHabits = habitsRepository.getActiveHabits(day, dateMillis)
 
         fetchedHabits.collectLatest { habits ->
-            Log.d("habits",habits.toString())
             _uiState.update { state ->
                 state.copy(habits = habits)
             }
@@ -65,9 +62,5 @@ class HomeViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(selectedDateMillis = newDateMillis)
         }
-    }
-
-    companion object {
-        private const val UI_STATE_KEY = "ui state key"
     }
 }

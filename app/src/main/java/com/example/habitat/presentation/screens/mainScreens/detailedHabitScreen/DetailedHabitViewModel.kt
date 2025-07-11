@@ -33,14 +33,6 @@ class DetailedHabitViewModel @AssistedInject constructor(
     private val _selectedHabitFlow: MutableStateFlow<Habit> = MutableStateFlow(habit)
     val selectedHabitFlow: StateFlow<Habit> = _selectedHabitFlow.asStateFlow()
 
-    init {
-    }
-
-    private fun fetchHabit() = viewModelScope.launch {
-        val fetchedHabit = habitsRepository.getHabitById("")
-        _selectedHabitFlow.update { fetchedHabit }
-    }
-
     fun invoke(event: DetailedHabitEvent) = viewModelScope.launch {
         when(event) {
             is DetailedHabitEvent.OnDescriptionValueChange -> onDescriptionValueChange(event.value)

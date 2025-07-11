@@ -1,5 +1,6 @@
 package com.example.habitat.presentation
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -13,16 +14,19 @@ import androidx.navigation.compose.composable
 import com.example.habitat.presentation.screens.starterScreens.getStartedScreen.GetStartedScreen
 import com.example.habitat.presentation.screens.starterScreens.registerScreen.RegisterViewModel
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import com.example.habitat.helpers.TimeHelper
+import com.example.habitat.domain.entities.Habit
+import com.example.habitat.helpers.serializations.decodeJsonObject
 import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitScreen
 import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitViewModel
-import com.example.habitat.presentation.screens.mainScreens.homeScreen.HomeEvent
+import com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen.DetailedHabitViewModel
+import com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen.DetailedHabitScreen
 import com.example.habitat.presentation.screens.mainScreens.homeScreen.HomeScreen
 import com.example.habitat.presentation.screens.mainScreens.homeScreen.HomeViewModel
 import com.example.habitat.presentation.screens.starterScreens.registerScreen.RegisterMainScreen
-import java.time.LocalDate
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import kotlinx.serialization.json.Json
 
 @Composable
 fun NavigationHost(
@@ -105,6 +109,27 @@ fun NavigationHost(
             route = ScreensRoutes.Statistics.route
         ) {
 
+        }
+
+        composable(ScreensRoutes.DetailedHabit.route) { backStackEntry ->
+            val habitJson = backStackEntry.arguments?.getString("habit")
+
+            habitJson?.let {
+                Log.d("habit json",habitJson)
+                val habitObj: Habit = decodeJsonObject(habitJson)
+
+                val detailedHabitViewModel = hiltViewModel<DetailedHabitViewModel,DetailedHabitViewModel.ViewModelAssistedFactory> { factory ->
+                    factory.create(habit = habitObj)
+                }
+
+                val selectedHabitFlow by detailedHabitViewModel.selectedHabitFlow.collectAsStateWithLifecycle()
+
+                DetailedHabitScreen(
+                    selectedHabit = selectedHabitFlow,
+                    navController = navHostController,
+                    executeEvent = detailedHabitViewModel::invoke
+                )
+            }
         }
     }
 }

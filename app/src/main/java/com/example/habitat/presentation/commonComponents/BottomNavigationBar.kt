@@ -1,6 +1,10 @@
 package com.example.habitat.presentation.commonComponents
 
 import android.graphics.Color
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +18,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,14 +30,17 @@ import com.example.habitat.ui.theme.HabitatTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.substring
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import com.example.habitat.presentation.ScreensRoutes
 import com.example.habitat.ui.theme.materialThemeExtensions.responsiveLayout
+import kotlinx.serialization.json.Json
+import kotlin.toString
 
-private val routesThatDisplaysBottomNavigationBar = listOf<String>(
-    ScreensRoutes.Home.route,
-    ScreensRoutes.AddHabit.route,
-    ScreensRoutes.Statistics.route,
+private val routesThatNotDisplaysBottomNavigationBar = listOf<String>(
+    ScreensRoutes.GetStarted.route,
+    ScreensRoutes.Register.route,
 )
 
 @Composable
@@ -43,7 +51,8 @@ fun BottomNavigationBar(
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute by remember { derivedStateOf { currentBackStackEntry?.destination?.route ?: ScreensRoutes.Home.route } }
-    val showBottomNavigationBar by remember { derivedStateOf { routesThatDisplaysBottomNavigationBar.contains(currentRoute)} }
+    val showBottomNavigationBar by remember { derivedStateOf { !routesThatNotDisplaysBottomNavigationBar.contains(currentRoute) } }
+
 
     if(showBottomNavigationBar) {
         Column(
@@ -61,8 +70,8 @@ fun BottomNavigationBar(
                 containerColor = MaterialTheme.colorScheme.background
             ) {
                 BottomNavigationBarItems.entries.forEach { item ->
-                    val isSelected = remember(currentRoute == item.route) {
-                        item.route == currentRoute
+                    val isSelected = remember(currentRoute.contains(item.route)) {
+                        currentRoute.contains(item.route)
                     }
 
                     NavigationBarItem(

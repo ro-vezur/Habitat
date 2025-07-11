@@ -88,8 +88,20 @@ object TimeHelper {
         return local.format(DateTimeFormatter.ofPattern(DateFormats.HH_MM))
     }
 
-    fun convertHoursAndMinutesIntoMillis(hours: Int,minutes: Int): Long {
-        return (hours * 60 * 60 * 1000L) + (minutes * 60 * 1000L)
+    fun convertHoursAndMinutesIntoMillis(hours: Int,minutes: Int): Long = (hours * 60 * 60 * 1000L) + (minutes * 60 * 1000L)
+
+    fun extractHoursFromMillis(millis: Long): Int {
+        val zone = ZoneId.systemDefault()
+        val localDate = Instant.ofEpochMilli(millis).atZone(zone).toLocalDateTime()
+
+        return localDate.hour
+    }
+
+    fun extractMinutesFromMillis(millis: Long): Int {
+        val zone = ZoneId.systemDefault()
+        val localDate = Instant.ofEpochMilli(millis).atZone(zone).toLocalDateTime()
+
+        return localDate.minute
     }
 
     fun getStartOfDayMillis(timestamp: Long): Long {

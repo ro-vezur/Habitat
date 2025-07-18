@@ -1,7 +1,7 @@
 package com.example.habitat.presentation
 
 import com.example.habitat.domain.entities.Habit
-import com.example.habitat.helpers.serializations.encodeJsonObject
+import com.example.habitat.helpers.serializations.base64EncodeJsonObjectToString
 import kotlinx.serialization.Serializable
 
 
@@ -22,7 +22,7 @@ sealed class ScreensRoutes(val route: String) {
     data object DetailedHabit: ScreensRoutes(route = "${Home.route}/{habit}") {
         fun createRoute(habit: Habit): String {
 
-            return route.replace("{habit}", encodeJsonObject(habit))
+            return route.replace("{habit}", base64EncodeJsonObjectToString(habit))
         }
     }
 }

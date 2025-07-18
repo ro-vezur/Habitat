@@ -16,7 +16,7 @@ import com.example.habitat.presentation.screens.starterScreens.registerScreen.Re
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.example.habitat.domain.entities.Habit
-import com.example.habitat.helpers.serializations.decodeJsonObject
+import com.example.habitat.helpers.serializations.base64DecodeJsonObject
 import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitScreen
 import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitViewModel
 import com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen.DetailedHabitViewModel
@@ -24,18 +24,12 @@ import com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen.
 import com.example.habitat.presentation.screens.mainScreens.homeScreen.HomeScreen
 import com.example.habitat.presentation.screens.mainScreens.homeScreen.HomeViewModel
 import com.example.habitat.presentation.screens.starterScreens.registerScreen.RegisterMainScreen
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import kotlinx.serialization.json.Json
 
 @Composable
 fun NavigationHost(
     modifier: Modifier,
     navHostController: NavHostController
 ) {
-    val viewmodelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
-        "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
-    }
 
     NavHost(
         modifier = modifier,
@@ -115,8 +109,7 @@ fun NavigationHost(
             val habitJson = backStackEntry.arguments?.getString("habit")
 
             habitJson?.let {
-                Log.d("habit json",habitJson)
-                val habitObj: Habit = decodeJsonObject(habitJson)
+                val habitObj: Habit = base64DecodeJsonObject(habitJson)
 
                 val detailedHabitViewModel = hiltViewModel<DetailedHabitViewModel,DetailedHabitViewModel.ViewModelAssistedFactory> { factory ->
                     factory.create(habit = habitObj)

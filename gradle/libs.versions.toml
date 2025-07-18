@@ -16,7 +16,7 @@ ksp = "2.0.21-1.0.26"
 hilt = "2.51.1"
 hiltNavigationCompose = "1.2.0"
 room = "2.7.2"
-
+accompanist-permissions = "0.37.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,6 +43,7 @@ hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose",ver
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended"}
 room = { module = "androidx.room:room-runtime", version.ref = "room"}
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist-permissions" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

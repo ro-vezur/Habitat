@@ -1,7 +1,5 @@
 package com.example.habitat.presentation.screens.mainScreens.addHabitScreen
 
-import android.R.attr.category
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habitat.domain.entities.Habit
@@ -9,7 +7,6 @@ import com.example.habitat.domain.repository.HabitsRepository
 import com.example.habitat.enums.HabitsCategories
 import com.example.habitat.helpers.TimeHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.NonCancellable.isCompleted
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,9 +14,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 import java.time.DayOfWeek
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -96,7 +90,7 @@ class AddHabitViewModel @Inject constructor(
                 periodicity = if(selectedDays.isEmpty()) listOf(TimeHelper.getCurrentDayOfWeekObject()) else selectedDays.sortedBy { it.value },
                 repeatEveryWeek = repeatEveryWeek,
                 timeOfCreation = currentTimeMillis(),
-                isCompleted = false
+                completedDates = emptyList()
             )
 
             habitsRepository.insertHabit(habit = habit)

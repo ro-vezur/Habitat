@@ -1,5 +1,16 @@
 package com.example.habitat.presentation.screens.mainScreens.addHabitScreen
 
+import android.Manifest
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.Settings
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,12 +40,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,8 +60,8 @@ import com.example.habitat.ui.theme.materialThemeExtensions.responsiveLayout
 import com.example.habitat.ui.theme.materialThemeExtensions.textColor
 import java.time.DayOfWeek
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.habitat.enums.HabitsCategories
@@ -58,15 +70,21 @@ import com.example.habitat.presentation.ScreensRoutes
 import com.example.habitat.presentation.commonComponents.CustomTimePickerDialog.CustomTimePickerDialog
 import com.example.habitat.presentation.commonComponents.buttons.CustomSwitcher
 import com.example.habitat.ui.theme.materialThemeExtensions.primaryButtonColor
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import kotlinx.coroutines.launch
 
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun AddHabitScreen(
     navController: NavController,
     uiState: AddHabitUiState,
     executeEvent: (AddHabitEvent) -> Unit,
 ) {
+
+    val context = LocalContext.current
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val permissionRequestLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted -> }
 
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -151,6 +169,21 @@ fun AddHabitScreen(
                     .fillMaxWidth()
                     .height(MaterialTheme.responsiveLayout.buttonHeight1),
                 onClick = {
+
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                        context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        permissionRequestLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+
+                        return@AddNewHabitButton
+                    }
+
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                        context.startActivity(intent)
+
+                        return@AddNewHabitButton
+                    }
+
                     executeEvent(AddHabitEvent.AddHabit)
                     navController.navigate(ScreensRoutes.Home.route) {
                         navController.graph.startDestinationRoute?.let { route ->
@@ -458,6 +491,7 @@ private fun AddNewHabitButton(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Preview
 @Composable
 private fun AddHabitScreenPrev() {

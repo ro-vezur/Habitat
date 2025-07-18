@@ -1,9 +1,10 @@
 package com.example.habitat.presentation.screens.mainScreens.homeScreen
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.habitat.domain.entities.Habit
 import com.example.habitat.domain.repository.HabitsRepository
+import com.example.habitat.helpers.TimeHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,7 +33,7 @@ class HomeViewModel @Inject constructor(
     fun executeEvent(event: HomeEvent) = viewModelScope.launch {
         when(event) {
             is HomeEvent.FetchHabitsByDate -> changeHabitsDate(event.day,event.dateMillis)
-            is HomeEvent.UpdateHabitStatus -> updateHabitStatus(event.id,event.status)
+            is HomeEvent.UpdateHabitCompletedDatesEvent -> updateHabitStatus(event.habit,event.selectedDateMillis)
             is HomeEvent.SelectNewDate -> selectNewDate(event.newDateMillis)
         }
     }
@@ -53,8 +54,13 @@ class HomeViewModel @Inject constructor(
 
     }
 
-    private fun updateHabitStatus(id: Int, status: Boolean) = viewModelScope.launch {
-        habitsRepository.updateHabitStatus(id,status)
+    private fun updateHabitStatus(habit: Habit, selectedDateMillis: Long) = viewModelScope.launch {
+        val startOfDayMillis = TimeHelper.getStartOfDayMillis(selectedDateMillis)
+
+        habitsRepository.updateHabitCompletedDates(
+            id = habit.id,
+            completedDates = if(habit.completedDates.contains(startOfDayMillis)) habit.completedDates - startOfDayMillis else habit.completedDates + startOfDayMillis
+        )
 
     }
 

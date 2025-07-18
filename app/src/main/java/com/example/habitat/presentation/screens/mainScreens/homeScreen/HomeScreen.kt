@@ -1,6 +1,5 @@
 package com.example.habitat.presentation.screens.mainScreens.homeScreen
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -73,7 +72,7 @@ fun HomeScreen(
     var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = datePickerState.selectedDateMillis) {
-        val localDate = TimeHelper.createLocalDateOfTimestamp(datePickerState.selectedDateMillis ?: 0)
+        val localDate = TimeHelper.createLocalDateOfMillis(datePickerState.selectedDateMillis ?: 0)
 
         executeEvent(HomeEvent.SelectNewDate(newDateMillis = datePickerState.selectedDateMillis ?: 0))
         executeEvent(HomeEvent.FetchHabitsByDate(
@@ -111,9 +110,13 @@ fun HomeScreen(
                     .background(MaterialTheme.colorScheme.background)
                     .padding(horizontal = MaterialTheme.responsiveLayout.paddingMedium),
                 navController = navController,
+                selectedDateMillis = datePickerState.selectedDateMillis ?: 0,
                 habits = uiState.habits,
-                updateHabitStatus = { id, status ->
-                    executeEvent(HomeEvent.UpdateHabitStatus(id, status))
+                updateHabitCompletedDates = { habit ->
+                    executeEvent(HomeEvent.UpdateHabitCompletedDatesEvent(
+                        habit = habit,
+                        selectedDateMillis = datePickerState.selectedDateMillis ?: 0)
+                    )
                 }
             )
 
@@ -184,8 +187,9 @@ private fun TopDateBar(
 private fun HabitsList(
     modifier: Modifier = Modifier,
     navController: NavController,
+    selectedDateMillis: Long,
     habits: List<Habit>,
-    updateHabitStatus: (Int, Boolean) -> Unit
+    updateHabitCompletedDates: (Habit) -> Unit
 ) {
     val sortedHabits = remember(habits) { habits.sortedBy { it.timeOfCreation } }
 
@@ -230,8 +234,9 @@ private fun HabitsList(
                                 restoreState = true
                             }
                         },
+                    selectedDateMillis = selectedDateMillis,
                     habit = habit,
-                    onCheck = { updateHabitStatus(habit.id,!habit.isCompleted) }
+                    onCheck = { updateHabitCompletedDates(habit) }
                 )
             }
 
@@ -286,6 +291,7 @@ private fun HabitsList(
 @Composable
 private fun HabitCard(
     modifier: Modifier = Modifier,
+    selectedDateMillis: Long,
     habit: Habit,
     onCheck: () -> Unit,
 ) {
@@ -338,7 +344,8 @@ private fun HabitCard(
         Spacer(Modifier.weight(1f))
 
         CustomCheckBox(
-            isChecked = habit.isCompleted,
+            isChecked = habit.completedDates.map { TimeHelper.formatDateFromMillis(it, TimeHelper.DateFormats.YYYY_MM_DD) }
+                .contains(TimeHelper.formatDateFromMillis(selectedDateMillis, TimeHelper.DateFormats.YYYY_MM_DD)),
             onCheck = {
                 onCheck()
             }
@@ -360,7 +367,7 @@ private fun HomeScreenPrev() {
                         category = HabitsCategories.STUDY,
                         remindTime = 0,
                         timeOfCreation = 1,
-                        isCompleted = true
+                        completedDates = emptyList()
                     ),
                     Habit(
                         id = 2,
@@ -368,7 +375,7 @@ private fun HomeScreenPrev() {
                         category = HabitsCategories.HEALTH,
                         remindTime = 0,
                         timeOfCreation = 2,
-                        isCompleted = true
+                        completedDates = emptyList()
                     )
                 )
             ),

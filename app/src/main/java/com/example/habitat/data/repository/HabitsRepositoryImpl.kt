@@ -1,28 +1,82 @@
 package com.example.habitat.data.repository
 
+import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import com.example.habitat.data.room.HabitsDao
 import com.example.habitat.domain.entities.Habit
 import com.example.habitat.domain.repository.HabitsRepository
 import com.example.habitat.helpers.TimeHelper
+import com.example.habitat.helpers.serializations.base64EncodeJsonObjectToString
+import com.example.habitat.presentation.services.ReminderBroadcastService
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class HabitsRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val habitsDao: HabitsDao
 ): HabitsRepository {
-    override suspend fun insertHabit(habit: Habit) = habitsDao.insertHabit(habit.toEntity())
+    private val alarmManager: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    override suspend fun insertHabit(habit: Habit) {
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) return
+
+        val intent = Intent(context, ReminderBroadcastService::class.java).apply {
+            putExtra("HABIT_DESCRIPTION", habit.description)
+            putExtra("REMIND_TIME", habit.remindTime)
+            putExtra("REPEAT_EVERY_WEEK", habit.repeatEveryWeek)
+            putExtra("PERIODICITY", ArrayList(habit.periodicity.map { it.value }))
+        }
+        val pendingIntent = PendingIntent.getBroadcast(context, habit.id, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            habit.remindTime,
+            pendingIntent
+        )
+
+        habitsDao.insertHabit(habit.toEntity())
+    }
 
     override suspend fun getActiveHabits(day: String, dateMillis: Long): Flow<List<Habit>> {
         val weekBounds = TimeHelper.getWeekBoundsFromMillis(dateMillis = dateMillis)
-        return habitsDao.getHabitsByDayOfWeek(
+        return habitsDao.getActiveHabits(
             day = day,
             startOfTheWeek = weekBounds.first,
             endOfTheWeek = weekBounds.second
         ).map { list -> list.map { entity -> entity.toDomain() } }
     }
 
-    override suspend fun updateHabitStatus(id: Int, status: Boolean) = habitsDao.updateHabitStatus(id,status)
+    override suspend fun updateHabitCompletedDates(id: Int, completedDates: List<Long>) {
+        habitsDao.updateHabitCompletedDates(
+            id = id,
+            completedDates = Json.encodeToString(completedDates)
+        )
+    }
 
-    override suspend fun updateHabit(habit: Habit) = habitsDao.updateHabit(habit.toEntity())
+    override suspend fun updateHabit(habit: Habit) {
+        val intent = Intent(context, ReminderBroadcastService::class.java).apply {
+            putExtra("HABIT_DESCRIPTION",habit.description)
+            putExtra("REMIND_TIME", habit.remindTime)
+            putExtra("REPEAT_EVERY_WEEK", habit.repeatEveryWeek)
+            putExtra("PERIODICITY", ArrayList(habit.periodicity.map { it.value }))
+        }
+        val pendingIntent = PendingIntent.getBroadcast(context,habit.id,intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+
+
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,habit.remindTime,pendingIntent)
+        habitsDao.updateHabit(habit.toEntity())
+    }
 }

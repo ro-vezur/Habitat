@@ -9,7 +9,7 @@ interface HabitsRepository {
 
     suspend fun getActiveHabits(day: String, dateMillis: Long): Flow<List<Habit>>
 
-    suspend fun updateHabitStatus(id: Int, status: Boolean)
+    suspend fun updateHabitCompletedDates(id: Int, completedDates: List<Long>)
 
     suspend fun updateHabit(habit: Habit)
 }

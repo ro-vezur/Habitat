@@ -1,7 +1,9 @@
 package com.example.habitat.domain.entities
 
+import android.util.Log
 import com.example.habitat.data.entities.HabitEntity
 import com.example.habitat.enums.HabitsCategories
+import com.example.habitat.helpers.TimeHelper
 import kotlinx.serialization.Serializable
 import java.time.DayOfWeek
 
@@ -14,18 +16,18 @@ data class Habit(
     val periodicity: List<DayOfWeek> = emptyList(),
     val repeatEveryWeek: Boolean = false,
     val timeOfCreation: Long = 0,
-    val isCompleted: Boolean = false,
+    val completedDates: List<Long> = emptyList(),
 ) {
     fun toEntity(): HabitEntity {
         return HabitEntity(
-            id = id,
-            description = description,
-            category = category?.name,
-            remindTime = remindTime,
-            periodicity = periodicity.map { it.name },
-            repeatEveryWeek = repeatEveryWeek,
-            timeOfCreation = timeOfCreation,
-            isCompleted = isCompleted
+            id = this@Habit.id,
+            description = this@Habit.description,
+            category = this@Habit.category?.name,
+            remindTime = this@Habit.remindTime,
+            periodicity = this@Habit.periodicity.map { it.name },
+            repeatEveryWeek = this@Habit.repeatEveryWeek,
+            timeOfCreation = this@Habit.timeOfCreation,
+            completedDates = this@Habit.completedDates
         )
     }
 }

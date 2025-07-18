@@ -6,7 +6,7 @@ import androidx.room.TypeConverters
 import com.example.habitat.data.entities.HabitEntity
 
 @TypeConverters(RoomTypeConverters::class)
-@Database(entities = [HabitEntity::class], version = 1)
+@Database(entities = [HabitEntity::class], version = 2)
 abstract class HabitsLocalDataBase: RoomDatabase() {
     abstract fun habitsDao(): HabitsDao
 }

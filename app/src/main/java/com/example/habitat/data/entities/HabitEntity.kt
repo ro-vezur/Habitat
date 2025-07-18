@@ -16,18 +16,18 @@ data class HabitEntity(
     val periodicity: List<String> = emptyList(),
     val repeatEveryWeek: Boolean = false,
     val timeOfCreation: Long = 0,
-    val isCompleted: Boolean = false,
+    val completedDates: List<Long> = emptyList(),
 ) {
     fun toDomain(): Habit {
         return Habit(
-            id = id,
-            description = description,
-            category = HabitsCategories.entries.find { it.name == category },
-            remindTime = remindTime,
-            periodicity = periodicity.map { dayNameWhenRepeat -> DayOfWeek.entries.find { dayOfWeek -> dayOfWeek.name == dayNameWhenRepeat} ?: DayOfWeek.MONDAY },
-            repeatEveryWeek = repeatEveryWeek,
-            timeOfCreation = timeOfCreation,
-            isCompleted = isCompleted
+            id = this@HabitEntity.id,
+            description = this@HabitEntity.description,
+            category = HabitsCategories.entries.find { it.name == this@HabitEntity.category },
+            remindTime = this@HabitEntity.remindTime,
+            periodicity = this@HabitEntity.periodicity.map { dayNameWhenRepeat -> DayOfWeek.entries.find { dayOfWeek -> dayOfWeek.name == dayNameWhenRepeat} ?: DayOfWeek.MONDAY },
+            repeatEveryWeek = this@HabitEntity.repeatEveryWeek,
+            timeOfCreation = this@HabitEntity.timeOfCreation,
+            completedDates = this@HabitEntity.completedDates
         )
     }
 }

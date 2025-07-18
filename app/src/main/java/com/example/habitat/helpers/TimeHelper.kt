@@ -8,13 +8,14 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
+import java.time.temporal.TemporalAdjusters
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
 object TimeHelper {
 
     fun getCurrentYear(): Int = LocalDate.now().year
-
 
     fun getMonthNameFromMillis(millis: Long): String {
         val date = Instant.ofEpochMilli(millis)
@@ -48,7 +49,7 @@ object TimeHelper {
         return date.dayOfMonth
     }
 
-    fun getYearFromTimestamp(millis: Long): Int {
+    fun getYearFromMillis(millis: Long): Int {
         val date = Instant.ofEpochMilli(millis)
             .atZone(ZoneId.systemDefault())
             .toLocalDate()
@@ -70,9 +71,9 @@ object TimeHelper {
         return startOfWeek to endOfWeek
     }
 
-    fun createLocalDateOfTimestamp(millis: Long): LocalDate {
+    fun createLocalDateOfMillis(millis: Long): LocalDate {
         return LocalDate.of(
-            getYearFromTimestamp(millis),
+            getYearFromMillis(millis),
             getMonthNumberFromMillis(millis),
             getDayOfMonthNumberFromMillis(millis)
         )
@@ -104,16 +105,47 @@ object TimeHelper {
         return localDate.minute
     }
 
-    fun getStartOfDayMillis(timestamp: Long): Long {
+    fun extractHoursAndMinutesInMillis(millis: Long): Long {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = millis
+        }
+
+        val hours = calendar.get(Calendar.HOUR_OF_DAY)
+        val minutes = calendar.get(Calendar.MINUTE)
+
+        return (hours * 60 * 60 * 1000L) + (minutes * 60 * 1000L)
+    }
+
+    fun getStartOfDayMillis(millis: Long): Long {
         val zone = ZoneId.systemDefault()
-        val localDate = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
+        val localDate = Instant.ofEpochMilli(millis).atZone(zone).toLocalDate()
         return localDate.atStartOfDay(zone).toInstant().toEpochMilli()
     }
 
     fun getCurrentDayOfWeekObject(): DayOfWeek = LocalDate.now().dayOfWeek
 
+
+    fun getStartOfWeekdayMillis(dayOfWeek: DayOfWeek): Long {
+        val now = LocalDate.now()
+        val targetDate = now.with(TemporalAdjusters.nextOrSame(dayOfWeek))
+
+        val startOfDay = targetDate.atStartOfDay(ZoneId.systemDefault())
+        return startOfDay.toInstant().toEpochMilli()
+    }
+
+    fun getNextWeekdayStartMillis(dayOfWeek: DayOfWeek): Long {
+        val today = LocalDate.now()
+        val nextWeekDate = today
+            .with(TemporalAdjusters.next(dayOfWeek)) // Get next occurrence of the day
+
+        val startOfDay = nextWeekDate.atStartOfDay(ZoneId.systemDefault())
+        return startOfDay.toInstant().toEpochMilli()
+    }
+
     object DateFormats {
         const val HH_MM = "HH:mm"
+        const val YYYY_MM_DD = "yyyy/MM/dd"
+        const val YYYY_MM_DD_HH_MM = "yyyy/MM/dd HH:mm"
     }
 
 }

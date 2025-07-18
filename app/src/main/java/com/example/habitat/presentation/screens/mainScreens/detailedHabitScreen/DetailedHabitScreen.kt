@@ -1,5 +1,14 @@
 package com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen
 
+import android.Manifest
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -65,6 +75,11 @@ fun DetailedHabitScreen(
     navController: NavController,
     executeEvent: (DetailedHabitEvent) -> Unit,
 ) {
+
+    val context = LocalContext.current
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val permissionRequestLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted -> }
+
     var showTimePicker by remember { mutableStateOf(false) }
 
     Column(
@@ -150,6 +165,20 @@ fun DetailedHabitScreen(
                     .fillMaxWidth()
                     .height(MaterialTheme.responsiveLayout.buttonHeight1),
                 onClick = {
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                        context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        permissionRequestLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+
+                        return@UpdateHabitButton
+                    }
+
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                        context.startActivity(intent)
+
+                        return@UpdateHabitButton
+                    }
+
                     executeEvent(DetailedHabitEvent.UpdateHabit)
                     navController.popBackStack()
                 }

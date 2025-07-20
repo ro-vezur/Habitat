@@ -23,6 +23,8 @@ import com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen.
 import com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen.DetailedHabitScreen
 import com.example.habitat.presentation.screens.mainScreens.homeScreen.HomeScreen
 import com.example.habitat.presentation.screens.mainScreens.homeScreen.HomeViewModel
+import com.example.habitat.presentation.screens.splashScreen.SplashScreen
+import com.example.habitat.presentation.screens.splashScreen.SplashScreenViewModel
 import com.example.habitat.presentation.screens.starterScreens.registerScreen.RegisterMainScreen
 
 @Composable
@@ -34,7 +36,7 @@ fun NavigationHost(
     NavHost(
         modifier = modifier,
         navController = navHostController,
-        startDestination = ScreensRoutes.Home.route,
+        startDestination = ScreensRoutes.SplashScreen.route,
         enterTransition = {
             fadeIn(
                 animationSpec = tween(durationMillis = 50)
@@ -49,7 +51,13 @@ fun NavigationHost(
         composable(
             route = ScreensRoutes.SplashScreen.route
         ) {
+            val splashScreenViewModel: SplashScreenViewModel = hiltViewModel()
+            val isUserRegistered: Boolean by splashScreenViewModel.isUserCompletedRegistration.collectAsStateWithLifecycle()
 
+            SplashScreen(
+                navController = navHostController,
+                isUserRegistered = isUserRegistered
+            )
         }
 
         composable(
@@ -76,7 +84,7 @@ fun NavigationHost(
         composable(
             route = ScreensRoutes.Home.route
         ) {
-            val homeViewModel: HomeViewModel = hiltViewModel()
+            val homeViewModel: HomeViewModel = hiltViewModel(it)
             val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
             HomeScreen(
@@ -89,7 +97,7 @@ fun NavigationHost(
         composable(
             route = ScreensRoutes.AddHabit.route
         ) {
-            val addHabitViewModel: AddHabitViewModel = hiltViewModel()
+            val addHabitViewModel: AddHabitViewModel = hiltViewModel(it)
             val uiState by addHabitViewModel.uiState.collectAsStateWithLifecycle()
 
             AddHabitScreen(

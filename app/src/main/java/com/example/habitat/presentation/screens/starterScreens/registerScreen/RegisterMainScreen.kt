@@ -39,6 +39,7 @@ import com.example.habitat.ui.theme.materialThemeExtensions.responsiveLayout
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import com.example.habitat.INITIAL_REGISTER_PAGE
+import com.example.habitat.presentation.ScreensRoutes
 import com.example.habitat.presentation.screens.starterScreens.registerScreen.components.SkipProceedButtons
 import com.example.habitat.presentation.screens.starterScreens.registerScreen.components.StartTrackingButton
 import com.example.habitat.presentation.screens.starterScreens.registerScreen.stepsScreens.FinishSetUpScreen
@@ -55,8 +56,6 @@ fun RegisterMainScreen(
     uiState: RegisterUiState,
     executeEvent: (RegisterEvent) -> Unit,
 ) {
-
-
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(
         initialPage = 1
@@ -167,7 +166,12 @@ fun RegisterMainScreen(
                     .height(MaterialTheme.responsiveLayout.buttonHeight1)
                     .fillMaxWidth(),
                 onClick = {
-
+                    executeEvent(RegisterEvent.CompleteRegistration)
+                    navController.navigate(ScreensRoutes.Home.route) {
+                        popUpTo(ScreensRoutes.GetStarted.route) {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }

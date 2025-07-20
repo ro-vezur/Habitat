@@ -8,4 +8,5 @@ sealed class RegisterEvent {
     class UpdateNameInput(val name: String): RegisterEvent()
     class UpdateAgeInput(val age: Int): RegisterEvent()
     class UpdatePlaceInput(val place: String): RegisterEvent()
+    object CompleteRegistration: RegisterEvent()
 }

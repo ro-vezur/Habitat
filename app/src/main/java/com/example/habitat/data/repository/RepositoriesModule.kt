@@ -3,6 +3,7 @@ package com.example.habitat.data.repository
 import android.content.Context
 import com.example.habitat.data.room.HabitsDao
 import com.example.habitat.domain.repository.HabitsRepository
+import com.example.habitat.domain.repository.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,4 +22,10 @@ object RepositoriesModule {
         return HabitsRepositoryImpl(context = context, habitsDao = habitsDao)
     }
 
+    @Provides
+    fun providesUserRepository(
+        @ApplicationContext context: Context
+    ): UserRepository {
+        return UserRepositoryImpl(context = context)
+    }
 }

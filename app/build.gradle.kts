@@ -71,4 +71,5 @@ dependencies {
     implementation(libs.room)
     ksp(libs.room.compiler)
     implementation(libs.accompanist.permissions)
+    implementation(libs.datastore)
 }

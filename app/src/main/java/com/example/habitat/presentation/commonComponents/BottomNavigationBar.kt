@@ -41,6 +41,7 @@ import kotlin.toString
 private val routesThatNotDisplaysBottomNavigationBar = listOf<String>(
     ScreensRoutes.GetStarted.route,
     ScreensRoutes.Register.route,
+    ScreensRoutes.SplashScreen.route
 )
 
 @Composable
@@ -78,11 +79,10 @@ fun BottomNavigationBar(
                         selected = isSelected,
                         onClick = {
                             navController.navigate(item.route) {
-                                navController.graph.startDestinationRoute?.let { route ->
-                                    popUpTo(route) {
-                                        saveState = true
-                                    }
+                                popUpTo(ScreensRoutes.Home.route) {
+                                    saveState = true
                                 }
+
                                 launchSingleTop = true
                                 restoreState = true
                             }

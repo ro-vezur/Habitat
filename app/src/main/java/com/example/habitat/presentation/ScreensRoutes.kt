@@ -25,4 +25,8 @@ sealed class ScreensRoutes(val route: String) {
             return route.replace("{habit}", base64EncodeJsonObjectToString(habit))
         }
     }
+
+    companion object {
+        val mainScreensStartDestinationRoute: String = Home.route
+    }
 }

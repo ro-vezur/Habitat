@@ -22,12 +22,12 @@ fun provideResponsiveTypography(): Typography {
 
 val phoneTypography = Typography(
     displayLarge = TextStyle(
-        fontSize = 32.sp,
+        fontSize = 38.sp,
         fontWeight = FontWeight.Bold,
         lineHeight = 40.sp
     ),
     displayMedium = TextStyle(
-        fontSize = 28.sp,
+        fontSize = 26.sp,
         fontWeight = FontWeight.Bold,
         lineHeight = 36.sp
     ),

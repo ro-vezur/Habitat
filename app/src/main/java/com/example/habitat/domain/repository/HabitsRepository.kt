@@ -11,5 +11,7 @@ interface HabitsRepository {
 
     suspend fun updateHabitCompletedDates(id: Int, completedDates: List<Long>)
 
+    suspend fun getHabitsBetweenDates(startDate: Long, endDate: Long): Flow<List<Habit>>
+
     suspend fun updateHabit(habit: Habit)
 }

@@ -1,20 +1,14 @@
 package com.example.habitat.data.repository
 
-import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresApi
-import androidx.annotation.RequiresPermission
 import com.example.habitat.data.room.HabitsDao
 import com.example.habitat.domain.entities.Habit
 import com.example.habitat.domain.repository.HabitsRepository
 import com.example.habitat.helpers.TimeHelper
-import com.example.habitat.helpers.serializations.base64EncodeJsonObjectToString
 import com.example.habitat.presentation.services.ReminderBroadcastService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -41,11 +35,13 @@ class HabitsRepositoryImpl @Inject constructor(
         }
         val pendingIntent = PendingIntent.getBroadcast(context, habit.id, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            habit.remindTime,
-            pendingIntent
-        )
+        if(habit.remindTime > System.currentTimeMillis()) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                habit.remindTime,
+                pendingIntent
+            )
+        }
 
         habitsDao.insertHabit(habit.toEntity())
     }
@@ -66,6 +62,11 @@ class HabitsRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun getHabitsBetweenDates(startDate: Long, endDate: Long): Flow<List<Habit>> {
+        return habitsDao.getHabitsBetweenDates(startDate,endDate).map { list ->
+            list.map { entity -> entity.toDomain() } }
+    }
+
     override suspend fun updateHabit(habit: Habit) {
         val intent = Intent(context, ReminderBroadcastService::class.java).apply {
             putExtra("HABIT_DESCRIPTION",habit.description)
@@ -76,7 +77,13 @@ class HabitsRepositoryImpl @Inject constructor(
         val pendingIntent = PendingIntent.getBroadcast(context,habit.id,intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
 
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,habit.remindTime,pendingIntent)
+        if(habit.remindTime > System.currentTimeMillis()) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                habit.remindTime,
+                pendingIntent
+            )
+        }
         habitsDao.updateHabit(habit.toEntity())
     }
 }

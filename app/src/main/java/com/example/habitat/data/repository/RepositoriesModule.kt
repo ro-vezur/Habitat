@@ -9,12 +9,14 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoriesModule {
 
     @Provides
+    @Singleton
     fun providesHabitRepository(
         @ApplicationContext context: Context,
         habitsDao: HabitsDao
@@ -23,9 +25,11 @@ object RepositoriesModule {
     }
 
     @Provides
+    @Singleton
     fun providesUserRepository(
         @ApplicationContext context: Context
     ): UserRepository {
         return UserRepositoryImpl(context = context)
     }
+
 }

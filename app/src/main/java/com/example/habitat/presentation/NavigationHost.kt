@@ -1,6 +1,5 @@
 package com.example.habitat.presentation
 
-import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -14,9 +13,10 @@ import androidx.navigation.compose.composable
 import com.example.habitat.presentation.screens.starterScreens.getStartedScreen.GetStartedScreen
 import com.example.habitat.presentation.screens.starterScreens.registerScreen.RegisterViewModel
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.example.habitat.domain.entities.Habit
 import com.example.habitat.helpers.serializations.base64DecodeJsonObject
+import com.example.habitat.presentation.screens.mainScreens.StatisticsScreen.StatisticsScreen
+import com.example.habitat.presentation.screens.mainScreens.StatisticsScreen.StatisticsScreenViewModel
 import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitScreen
 import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitViewModel
 import com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen.DetailedHabitViewModel
@@ -110,7 +110,13 @@ fun NavigationHost(
         composable(
             route = ScreensRoutes.Statistics.route
         ) {
+            val statisticsViewModel: StatisticsScreenViewModel = hiltViewModel(it)
+            val uiState by statisticsViewModel.uiState.collectAsStateWithLifecycle()
 
+            StatisticsScreen(
+                uiState = uiState,
+                executeEvent = statisticsViewModel::executeEvent
+            )
         }
 
         composable(ScreensRoutes.DetailedHabit.route) { backStackEntry ->

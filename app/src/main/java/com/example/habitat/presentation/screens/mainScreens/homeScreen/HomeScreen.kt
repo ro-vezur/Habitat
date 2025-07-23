@@ -75,10 +75,7 @@ fun HomeScreen(
         val localDate = TimeHelper.createLocalDateOfMillis(datePickerState.selectedDateMillis ?: 0)
 
         executeEvent(HomeEvent.SelectNewDate(newDateMillis = datePickerState.selectedDateMillis ?: 0))
-        executeEvent(HomeEvent.FetchHabitsByDate(
-            day = localDate.dayOfWeek.name,
-            dateMillis = datePickerState.selectedDateMillis ?: 0,
-            )
+        executeEvent(HomeEvent.FetchHabitsByDate(day = localDate.dayOfWeek.name)
         )
     }
 
@@ -220,9 +217,6 @@ private fun HabitsList(
                             color = MaterialTheme.colorScheme.primary,
                             shape = RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1)
                         )
-                        .padding(
-                            MaterialTheme.responsiveLayout.paddingSmall
-                        )
                         .clickable {
                             navController.navigate(ScreensRoutes.DetailedHabit.createRoute(habit = habit)) {
                                 navController.graph.startDestinationRoute?.let { route ->
@@ -233,7 +227,8 @@ private fun HabitsList(
                                 launchSingleTop = true
                                 restoreState = true
                             }
-                        },
+                        }
+                        .padding(MaterialTheme.responsiveLayout.paddingSmall),
                     selectedDateMillis = selectedDateMillis,
                     habit = habit,
                     onCheck = { updateHabitCompletedDates(habit) }

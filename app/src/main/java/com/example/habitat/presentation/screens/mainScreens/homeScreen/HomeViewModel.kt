@@ -26,21 +26,17 @@ class HomeViewModel @Inject constructor(
 
     private var fetchHabitsJob: Job = Job()
 
-    init {
-
-    }
-
     fun executeEvent(event: HomeEvent) = viewModelScope.launch {
         when(event) {
-            is HomeEvent.FetchHabitsByDate -> changeHabitsDate(event.day,event.dateMillis)
+            is HomeEvent.FetchHabitsByDate -> changeHabitsDate(event.day)
             is HomeEvent.UpdateHabitCompletedDatesEvent -> updateHabitStatus(event.habit,event.selectedDateMillis)
             is HomeEvent.SelectNewDate -> selectNewDate(event.newDateMillis)
         }
     }
 
-    private fun changeHabitsDate(day: String,dateMillis: Long) {
+    private fun changeHabitsDate(day: String) {
         fetchHabitsJob.cancel()
-        fetchHabitsJob = fetchHabitsByDate(day,dateMillis)
+        fetchHabitsJob = fetchHabitsByDate(day,_uiState.value.selectedDateMillis)
     }
 
     private fun fetchHabitsByDate(day: String,dateMillis: Long) = viewModelScope.launch(Dispatchers.IO) {
@@ -51,7 +47,6 @@ class HomeViewModel @Inject constructor(
                 state.copy(habits = habits)
             }
         }
-
     }
 
     private fun updateHabitStatus(habit: Habit, selectedDateMillis: Long) = viewModelScope.launch {

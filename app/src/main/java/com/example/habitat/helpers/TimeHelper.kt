@@ -1,5 +1,7 @@
 package com.example.habitat.helpers
 
+import android.util.Log
+import com.example.habitat.helpers.habitStatistics.StatsPeriod
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.Instant
@@ -71,6 +73,20 @@ object TimeHelper {
         return startOfWeek to endOfWeek
     }
 
+    fun getMonthBoundsFromMillis(dateMillis: Long): Pair<Long, Long> {
+        val zone = ZoneId.systemDefault()
+        val date = Instant.ofEpochMilli(dateMillis).atZone(zone).toLocalDate()
+
+        val startOfMonth = date.withDayOfMonth(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        val endOfMonth = date.withDayOfMonth(date.month.length(date.isLeapYear))
+            .atTime(LocalTime.MAX)
+            .atZone(zone)
+            .toInstant()
+            .toEpochMilli()
+
+        return startOfMonth to endOfMonth
+    }
+
     fun createLocalDateOfMillis(millis: Long): LocalDate {
         return LocalDate.of(
             getYearFromMillis(millis),
@@ -124,7 +140,6 @@ object TimeHelper {
 
     fun getCurrentDayOfWeekObject(): DayOfWeek = LocalDate.now().dayOfWeek
 
-
     fun getStartOfWeekdayMillis(dayOfWeek: DayOfWeek): Long {
         val now = LocalDate.now()
         val targetDate = now.with(TemporalAdjusters.nextOrSame(dayOfWeek))
@@ -140,6 +155,38 @@ object TimeHelper {
 
         val startOfDay = nextWeekDate.atStartOfDay(ZoneId.systemDefault())
         return startOfDay.toInstant().toEpochMilli()
+    }
+
+    fun getDayOfWeekObjectFromMillis(millis: Long): DayOfWeek {
+        val date = Instant.ofEpochMilli(millis)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+
+        return date.dayOfWeek
+    }
+
+    fun getCurrentMonthLength(): Int {
+        val zone = ZoneId.systemDefault()
+        val date = Instant.ofEpochMilli(System.currentTimeMillis()).atZone(zone).toLocalDate()
+
+        return date.month.length(date.isLeapYear)
+    }
+
+    fun getCalenderWithPeriod(period: StatsPeriod,timeMillis: Long): Calendar {
+        val zone = ZoneId.systemDefault()
+        val date = Instant.ofEpochMilli(System.currentTimeMillis()).atZone(zone).toLocalDate()
+        val cal = Calendar.getInstance()
+
+        when (period) {
+            is StatsPeriod.Week -> cal.set(getCurrentYear(),date.month.value - 1,date.with(DayOfWeek.MONDAY).dayOfMonth)
+            is StatsPeriod.Month -> cal.set(getCurrentYear(),date.month.value - 1,getDayOfMonthNumberFromMillis(getWeekBoundsFromMillis(timeMillis).first))
+        }
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+
+        return cal
     }
 
     object DateFormats {

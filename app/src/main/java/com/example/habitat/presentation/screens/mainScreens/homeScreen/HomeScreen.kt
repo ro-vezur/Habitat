@@ -219,10 +219,8 @@ private fun HabitsList(
                         )
                         .clickable {
                             navController.navigate(ScreensRoutes.DetailedHabit.createRoute(habit = habit)) {
-                                navController.graph.startDestinationRoute?.let { route ->
-                                    popUpTo(route) {
-                                        saveState = true
-                                    }
+                                popUpTo(ScreensRoutes.mainScreensStartDestinationRoute) {
+                                    saveState = true
                                 }
                                 launchSingleTop = true
                                 restoreState = true
@@ -258,10 +256,8 @@ private fun HabitsList(
                             .background(MaterialTheme.colorScheme.secondary)
                             .clickable {
                                 navController.navigate(ScreensRoutes.AddHabit.route) {
-                                    navController.graph.startDestinationRoute?.let { route ->
-                                        popUpTo(route) {
-                                            saveState = true
-                                        }
+                                    popUpTo(ScreensRoutes.mainScreensStartDestinationRoute) {
+                                        saveState = true
                                     }
                                     launchSingleTop = true
                                     restoreState = true

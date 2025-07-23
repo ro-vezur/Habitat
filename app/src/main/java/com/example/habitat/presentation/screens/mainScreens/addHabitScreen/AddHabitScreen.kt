@@ -5,6 +5,7 @@ import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.http.SslCertificate.restoreState
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
@@ -67,12 +68,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.habitat.enums.HabitsCategories
 import com.example.habitat.helpers.TimeHelper
 import com.example.habitat.presentation.ScreensRoutes
+import com.example.habitat.presentation.ScreensRoutes.Companion.mainScreensStartDestinationRoute
 import com.example.habitat.presentation.commonComponents.CustomTimePickerDialog.CustomTimePickerDialog
 import com.example.habitat.presentation.commonComponents.buttons.CustomSwitcher
 import com.example.habitat.ui.theme.materialThemeExtensions.primaryButtonColor
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -186,10 +186,8 @@ fun AddHabitScreen(
 
                     executeEvent(AddHabitEvent.AddHabit)
                     navController.navigate(ScreensRoutes.Home.route) {
-                        navController.graph.startDestinationRoute?.let { route ->
-                            popUpTo(route) {
+                            popUpTo(mainScreensStartDestinationRoute) {
                                 saveState = true
-                            }
                         }
                         launchSingleTop = true
                         restoreState = true

@@ -3,7 +3,6 @@ package com.example.habitat.domain.entities
 import android.util.Log
 import com.example.habitat.data.entities.HabitEntity
 import com.example.habitat.enums.HabitsCategories
-import com.example.habitat.helpers.TimeHelper
 import kotlinx.serialization.Serializable
 import java.time.DayOfWeek
 

@@ -2,8 +2,7 @@ package com.example.habitat.data.room
 
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy.Companion.IGNORE
-import androidx.room.OnConflictStrategy.Companion.REPLACE
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.habitat.data.entities.HabitEntity
@@ -11,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HabitsDao {
-    @Insert(onConflict = IGNORE)
+    @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun insertHabit(habit: HabitEntity)
 
     @Query("SELECT * FROM habits" +
@@ -26,6 +25,9 @@ interface HabitsDao {
 
     @Query("UPDATE habits SET completedDates = :completedDates WHERE id = :id")
     suspend fun updateHabitCompletedDates(id: Int, completedDates: String)
+
+    @Query("SELECT * FROM habits WHERE timeOfCreation BETWEEN :startDate AND :endDate OR repeatEveryWeek")
+    fun getHabitsBetweenDates(startDate: Long, endDate: Long): Flow<List<HabitEntity>>
 
     @Update
     suspend fun updateHabit(habit: HabitEntity)

@@ -1,4 +1,4 @@
-package com.example.habitat.helpers.habitStatistics
+package com.example.habitat.presentation.screens.mainScreens.StatisticsScreen.habitStatisticsHelper
 
 import com.example.habitat.domain.entities.Habit
 

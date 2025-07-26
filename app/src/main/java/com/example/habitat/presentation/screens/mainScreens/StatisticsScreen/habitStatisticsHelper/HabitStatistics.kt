@@ -1,9 +1,6 @@
-package com.example.habitat.helpers.habitStatistics
+package com.example.habitat.presentation.screens.mainScreens.StatisticsScreen.habitStatisticsHelper
 
-import android.util.Log
-import coil3.util.CoilUtils.result
 import com.example.habitat.domain.entities.Habit
-import com.example.habitat.helpers.habitStatistics.StatsPeriod
 import com.example.habitat.helpers.TimeHelper
 import java.time.DayOfWeek
 import java.util.Calendar
@@ -16,16 +13,20 @@ object HabitStatistics {
     ): HabitStats {
         val plannedTimes: MutableList<Boolean> = mutableListOf()
 
-        val calendar = TimeHelper.getCalenderWithPeriod(period,habit.timeOfCreation)
+        val calendar = TimeHelper.getCalenderWithPeriod(period)
 
         val periodLength = when(period) {
-            is StatsPeriod.Month -> period.periodLength
-            is StatsPeriod.Week -> calendar.get(Calendar.DAY_OF_MONTH) + period.periodLength - 1
+            is StatsPeriod.Month -> calendar.get(Calendar.DAY_OF_YEAR) + period.periodLength
+            is StatsPeriod.Week -> calendar.get(Calendar.DAY_OF_YEAR) + period.periodLength - 1
         }
 
-        while (calendar.get(Calendar.DAY_OF_MONTH) <= periodLength) {
+        if(habit.timeOfCreation > calendar.timeInMillis) {
+            calendar.timeInMillis = TimeHelper.getWeekBoundsFromMillis(habit.timeOfCreation).first
+        }
+
+        while (calendar.get(Calendar.DAY_OF_YEAR) <= periodLength) {
             val dayName = TimeHelper.getDayOfWeekObjectFromMillis(calendar.timeInMillis)
-            val starterDayMillis = TimeHelper.getStartOfDayMillis(calendar.timeInMillis)
+            val starterDayMillis = TimeHelper.getStartOfDayFromMillis(calendar.timeInMillis)
 
             if (dayName in habit.periodicity) {
                 plannedTimes.add(habit.completedDates.contains(starterDayMillis))
@@ -35,11 +36,8 @@ object HabitStatistics {
                 break
             }
 
-            if(period is StatsPeriod.Month && calendar.get(Calendar.DAY_OF_MONTH) == periodLength) {
-                break
-            }
+            calendar.add(Calendar.DAY_OF_YEAR,1)
 
-            calendar.add(Calendar.DAY_OF_MONTH,1)
         }
 
         return HabitStats(

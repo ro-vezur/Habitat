@@ -8,21 +8,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.habitat.domain.entities.Habit
 import com.example.habitat.domain.repository.HabitsRepository
 import com.example.habitat.helpers.TimeHelper
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.Serializable
 import java.time.DayOfWeek
-import javax.inject.Inject
-
 @AndroidEntryPoint
 class ReminderBroadcastService : BroadcastReceiver() {
-
-    @Inject
-    lateinit var habitsRepository: HabitsRepository
 
     override fun onReceive(context: Context, intent: Intent) {
         val alarmManager: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -36,43 +29,27 @@ class ReminderBroadcastService : BroadcastReceiver() {
 
         sendNotification(context,habitDescription)
 
-        val getNextRemindTime = getNextRemindTime(
+        val nextRemindTime = Habit.getNextRemindTime(
             remindTime = remindTime,
             repeatEveryWeek = repeatEveryWeek,
             periodicity = periodicityDaysOfWeek
         )
 
-        getNextRemindTime?.let {
+        nextRemindTime?.let {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager.canScheduleExactAlarms()) {
-                intent.putExtra("REMIND_TIME",getNextRemindTime)
+                intent.putExtra("REMIND_TIME",nextRemindTime)
 
                 val pendingIntent = PendingIntent.getBroadcast(context,habitId,intent, PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
                 alarmManager.setExactAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
-                    getNextRemindTime,
+                    nextRemindTime,
                     pendingIntent
                 )
             }
         }
     }
 
-}
-
-private  fun getNextRemindTime(remindTime: Long, repeatEveryWeek: Boolean, periodicity: List<DayOfWeek>): Long? {
-    val indexOfCurrentDayOfWeek = periodicity.indexOf(TimeHelper.getCurrentDayOfWeekObject())
-    val nextDayIndex = indexOfCurrentDayOfWeek + 1
-    val hoursAndMinutesInMillisFromPreviousRemind = TimeHelper.extractHoursAndMinutesInMillis(remindTime)
-
-    return when {
-        nextDayIndex == periodicity.size && !repeatEveryWeek -> return null
-        nextDayIndex == periodicity.size && repeatEveryWeek -> {
-            TimeHelper.getNextWeekdayStartMillis(periodicity.first()) + hoursAndMinutesInMillisFromPreviousRemind
-        }
-        else -> {
-            TimeHelper.getStartOfWeekdayMillis(periodicity[nextDayIndex]) + hoursAndMinutesInMillisFromPreviousRemind
-        }
-    }
 }
 
 private fun sendNotification(context: Context, description: String) {

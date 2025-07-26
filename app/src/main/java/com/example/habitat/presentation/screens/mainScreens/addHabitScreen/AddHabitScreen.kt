@@ -62,6 +62,7 @@ import com.example.habitat.ui.theme.materialThemeExtensions.textColor
 import java.time.DayOfWeek
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -83,7 +84,8 @@ fun AddHabitScreen(
 ) {
 
     val context = LocalContext.current
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val isInPreview = LocalInspectionMode.current
+    val alarmManager = if(!isInPreview) context.getSystemService(Context.ALARM_SERVICE) as AlarmManager else null
     val permissionRequestLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted -> }
 
     var showTimePicker by remember { mutableStateOf(false) }
@@ -93,7 +95,7 @@ fun AddHabitScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)
     ) {
-        TopBar( )
+        TopBar()
 
         Column(
             modifier = Modifier
@@ -177,7 +179,7 @@ fun AddHabitScreen(
                         return@AddNewHabitButton
                     }
 
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager?.canScheduleExactAlarms() == false) {
                         val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                         context.startActivity(intent)
 
@@ -215,7 +217,6 @@ fun AddHabitScreen(
 
 @Composable
 private fun TopBar() {
-
     Row(
         modifier = Modifier
             .padding(

@@ -110,7 +110,7 @@ fun NavigationHost(
         composable(
             route = ScreensRoutes.Statistics.route
         ) {
-            val statisticsViewModel: StatisticsScreenViewModel = hiltViewModel(it)
+            val statisticsViewModel: StatisticsScreenViewModel = hiltViewModel()
             val uiState by statisticsViewModel.uiState.collectAsStateWithLifecycle()
 
             StatisticsScreen(

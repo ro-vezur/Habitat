@@ -86,7 +86,7 @@ class AddHabitViewModel @Inject constructor(
                 id = 0,
                 description = habitDescription,
                 category = habitCategory,
-                remindTime = hoursAndMinutesInMillis + TimeHelper.getStartOfDayMillis(currentTimeMillis()),
+                remindTime = hoursAndMinutesInMillis + TimeHelper.getStartOfDayFromMillis(currentTimeMillis()),
                 periodicity = if(selectedDays.isEmpty()) listOf(TimeHelper.getCurrentDayOfWeekObject()) else selectedDays.sortedBy { it.value },
                 repeatEveryWeek = repeatEveryWeek,
                 timeOfCreation = currentTimeMillis(),

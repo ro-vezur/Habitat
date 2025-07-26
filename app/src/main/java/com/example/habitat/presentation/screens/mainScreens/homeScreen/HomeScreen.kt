@@ -72,11 +72,7 @@ fun HomeScreen(
     var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = datePickerState.selectedDateMillis) {
-        val localDate = TimeHelper.createLocalDateOfMillis(datePickerState.selectedDateMillis ?: 0)
-
         executeEvent(HomeEvent.SelectNewDate(newDateMillis = datePickerState.selectedDateMillis ?: 0))
-        executeEvent(HomeEvent.FetchHabitsByDate(day = localDate.dayOfWeek.name)
-        )
     }
 
     Box(

@@ -41,6 +41,7 @@ class DetailedHabitViewModel @AssistedInject constructor(
             is DetailedHabitEvent.RemovePeriodicityDay -> removePeriodicityDay(event.day)
             is DetailedHabitEvent.ChangeRepeatEveryWeekValue -> changeRepeatEveryWeekValue(event.value)
             is DetailedHabitEvent.ChangeRemindTime -> changeRemindTime(event.hours,event.minutes)
+            DetailedHabitEvent.DeleteHabit -> deleteHabit()
             DetailedHabitEvent.UpdateHabit -> updateHabit()
         }
     }
@@ -67,11 +68,16 @@ class DetailedHabitViewModel @AssistedInject constructor(
 
     private fun changeRemindTime(hours: Int, minutes: Int) = viewModelScope.launch {
         val hoursAndMinutesInMillis = TimeHelper.convertHoursAndMinutesIntoMillis(hours,minutes)
-        val startOfDayInMillis = TimeHelper.getStartOfDayMillis(System.currentTimeMillis())
 
         _selectedHabitFlow.update { habit ->
+            val startOfDayInMillis = TimeHelper.getStartOfDayFromMillis(habit.remindTime)
+
             habit.copy(remindTime = hoursAndMinutesInMillis + startOfDayInMillis)
         }
+    }
+
+    private fun deleteHabit() = viewModelScope.launch {
+        habitsRepository.deleteHabit(_selectedHabitFlow.value)
     }
 
     private fun updateHabit() = viewModelScope.launch {

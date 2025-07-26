@@ -7,8 +7,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,16 +31,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,9 +57,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.habitat.domain.entities.Habit
 import com.example.habitat.enums.HabitsCategories
 import com.example.habitat.helpers.TimeHelper
@@ -62,7 +73,9 @@ import com.example.habitat.presentation.commonComponents.InteractiveFields.Custo
 import com.example.habitat.presentation.commonComponents.InteractiveFields.baseCustomTextFieldColors
 import com.example.habitat.presentation.commonComponents.buttons.CustomSwitcher
 import com.example.habitat.presentation.commonComponents.buttons.TurnBackButton
-import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitEvent
+import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitScreen
+import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitUiState
+import com.example.habitat.ui.theme.HabitatTheme
 import com.example.habitat.ui.theme.materialThemeExtensions.iconColor
 import com.example.habitat.ui.theme.materialThemeExtensions.primaryButtonColor
 import com.example.habitat.ui.theme.materialThemeExtensions.responsiveLayout
@@ -77,10 +90,12 @@ fun DetailedHabitScreen(
 ) {
 
     val context = LocalContext.current
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val isInPreview = LocalInspectionMode.current
+    val alarmManager = if(!isInPreview) context.getSystemService(Context.ALARM_SERVICE) as AlarmManager else null
     val permissionRequestLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted -> }
 
     var showTimePicker by remember { mutableStateOf(false) }
+    var showDialogToDeleteHabit by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -88,7 +103,10 @@ fun DetailedHabitScreen(
             .background(MaterialTheme.colorScheme.primary)
     ) {
         TopBar(
-            turnBack = { navController.popBackStack() }
+            turnBack = { navController.popBackStack() },
+            onClickDeleteHabit = {
+                showDialogToDeleteHabit = true
+            }
         )
 
         Column(
@@ -172,7 +190,7 @@ fun DetailedHabitScreen(
                         return@UpdateHabitButton
                     }
 
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager?.canScheduleExactAlarms() == false) {
                         val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                         context.startActivity(intent)
 
@@ -199,20 +217,32 @@ fun DetailedHabitScreen(
             }
         )
     }
+
+    if(showDialogToDeleteHabit) {
+        DialogToDeleteHabit(
+            onDismiss = {
+                showDialogToDeleteHabit = false
+            },
+            onAccept = {
+                executeEvent(DetailedHabitEvent.DeleteHabit)
+                navController.popBackStack()
+            }
+        )
+    }
 }
 
 @Composable
 private fun TopBar(
     turnBack: () -> Unit,
+    onClickDeleteHabit: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .padding(
-                start = MaterialTheme.responsiveLayout.paddingMedium,
+                horizontal = MaterialTheme.responsiveLayout.paddingSmall,
             )
             .height(MaterialTheme.responsiveLayout.topBarHeight)
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.responsiveLayout.paddingMedium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TurnBackButton(
@@ -222,11 +252,104 @@ private fun TopBar(
         )
 
         Text(
-            modifier = Modifier,
+            modifier = Modifier
+                .padding(start = MaterialTheme.responsiveLayout.paddingSmall),
             text = "Detailed Info about Habit",
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.textColor,
         )
+
+        Spacer(Modifier.weight(1f))
+
+        IconButton(
+            modifier = Modifier,
+            colors = IconButtonDefaults.iconButtonColors(
+                containerColor = MaterialTheme.colorScheme.secondary
+            ),
+            onClick = {
+                onClickDeleteHabit()
+            },
+        ) {
+            Icon(
+                modifier = Modifier
+                    .size(MaterialTheme.responsiveLayout.iconMedium),
+                imageVector = Icons.Default.Delete,
+                contentDescription = "delete",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
+private fun DialogToDeleteHabit(
+    onDismiss: () -> Unit,
+    onAccept: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1))
+                .background(MaterialTheme.colorScheme.background),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                modifier = Modifier
+                    .padding(top = MaterialTheme.responsiveLayout.paddingMedium)
+                    .fillMaxWidth(0.9f),
+                text = "Are you sure want to fully delete this habit?\n(Habit will be deleted from all dates)",
+                style = MaterialTheme.typography.displaySmall,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = MaterialTheme.responsiveLayout.paddingSmall, vertical = MaterialTheme.responsiveLayout.paddingMedium),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.responsiveLayout.spacingLarge)
+            ) {
+                TextButton(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(MaterialTheme.responsiveLayout.buttonHeight1),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryButtonColor
+                    ),
+                    shape = RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius2),
+                    onClick = {
+                        onAccept()
+                    }
+                ) {
+                    Text(
+                        text = "Yes",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.textColor
+                    )
+                }
+
+                TextButton(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(MaterialTheme.responsiveLayout.buttonHeight1),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryButtonColor
+                    ),
+                    shape = RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius2),
+                    onClick = {
+                        onDismiss()
+                    }
+                ) {
+                    Text(
+                        text = "No",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.textColor
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -480,6 +603,21 @@ private fun UpdateHabitButton(
             text = "Update Habit",
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.textColor
+        )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@Preview
+@Composable
+private fun DetailedHabitScreenPrev() {
+    HabitatTheme {
+        DetailedHabitScreen(
+            navController = rememberNavController(),
+            selectedHabit = Habit(id = 0),
+            executeEvent = {
+
+            }
         )
     }
 }

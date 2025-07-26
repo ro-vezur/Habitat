@@ -1,7 +1,6 @@
 package com.example.habitat.helpers
 
-import android.util.Log
-import com.example.habitat.helpers.habitStatistics.StatsPeriod
+import com.example.habitat.presentation.screens.mainScreens.StatisticsScreen.habitStatisticsHelper.StatsPeriod
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.Instant
@@ -35,28 +34,12 @@ object TimeHelper {
         return date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
     }
 
-    fun getMonthNumberFromMillis(millis: Long): Int {
-        val date = Instant.ofEpochMilli(millis)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
-
-        return date.month.value
-    }
-
     fun getDayOfMonthNumberFromMillis(millis: Long): Int {
         val date = Instant.ofEpochMilli(millis)
             .atZone(ZoneId.systemDefault())
             .toLocalDate()
 
         return date.dayOfMonth
-    }
-
-    fun getYearFromMillis(millis: Long): Int {
-        val date = Instant.ofEpochMilli(millis)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
-
-        return date.year
     }
 
     fun getWeekBoundsFromMillis(dateMillis: Long): Pair<Long, Long> {
@@ -85,14 +68,6 @@ object TimeHelper {
             .toEpochMilli()
 
         return startOfMonth to endOfMonth
-    }
-
-    fun createLocalDateOfMillis(millis: Long): LocalDate {
-        return LocalDate.of(
-            getYearFromMillis(millis),
-            getMonthNumberFromMillis(millis),
-            getDayOfMonthNumberFromMillis(millis)
-        )
     }
 
     fun formatDateFromMillis(millis: Long, dateFormat: String): String {
@@ -132,10 +107,19 @@ object TimeHelper {
         return (hours * 60 * 60 * 1000L) + (minutes * 60 * 1000L)
     }
 
-    fun getStartOfDayMillis(millis: Long): Long {
+    fun getStartOfDayFromMillis(millis: Long): Long {
         val zone = ZoneId.systemDefault()
         val localDate = Instant.ofEpochMilli(millis).atZone(zone).toLocalDate()
         return localDate.atStartOfDay(zone).toInstant().toEpochMilli()
+    }
+
+    fun getEndOfDayFromMillis(millis: Long): Long {
+        val zone = ZoneId.systemDefault()
+        val localDate = Instant.ofEpochMilli(millis).atZone(zone).toLocalDate()
+
+        return localDate.atTime(LocalTime.MAX)
+            .atZone(zone)
+            .toInstant().toEpochMilli()
     }
 
     fun getCurrentDayOfWeekObject(): DayOfWeek = LocalDate.now().dayOfWeek
@@ -151,7 +135,7 @@ object TimeHelper {
     fun getNextWeekdayStartMillis(dayOfWeek: DayOfWeek): Long {
         val today = LocalDate.now()
         val nextWeekDate = today
-            .with(TemporalAdjusters.next(dayOfWeek)) // Get next occurrence of the day
+            .with(TemporalAdjusters.next(dayOfWeek))
 
         val startOfDay = nextWeekDate.atStartOfDay(ZoneId.systemDefault())
         return startOfDay.toInstant().toEpochMilli()
@@ -172,15 +156,17 @@ object TimeHelper {
         return date.month.length(date.isLeapYear)
     }
 
-    fun getCalenderWithPeriod(period: StatsPeriod,timeMillis: Long): Calendar {
+    fun getCalenderWithPeriod(period: StatsPeriod): Calendar {
         val zone = ZoneId.systemDefault()
         val date = Instant.ofEpochMilli(System.currentTimeMillis()).atZone(zone).toLocalDate()
+
         val cal = Calendar.getInstance()
 
         when (period) {
-            is StatsPeriod.Week -> cal.set(getCurrentYear(),date.month.value - 1,date.with(DayOfWeek.MONDAY).dayOfMonth)
-            is StatsPeriod.Month -> cal.set(getCurrentYear(),date.month.value - 1,getDayOfMonthNumberFromMillis(getWeekBoundsFromMillis(timeMillis).first))
+            is StatsPeriod.Week -> cal.set(getCurrentYear(),date.monthValue - 1,date.with(DayOfWeek.MONDAY).dayOfMonth)
+            is StatsPeriod.Month -> cal.set(getCurrentYear(),date.monthValue - 1,0)
         }
+
         cal.set(Calendar.HOUR_OF_DAY, 0)
         cal.set(Calendar.MINUTE, 0)
         cal.set(Calendar.SECOND, 0)

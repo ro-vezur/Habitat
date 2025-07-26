@@ -14,4 +14,6 @@ interface HabitsRepository {
     suspend fun getHabitsBetweenDates(startDate: Long, endDate: Long): Flow<List<Habit>>
 
     suspend fun updateHabit(habit: Habit)
+
+    suspend fun deleteHabit(habit: Habit)
 }

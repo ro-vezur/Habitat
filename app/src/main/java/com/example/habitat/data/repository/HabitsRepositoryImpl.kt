@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import com.example.habitat.data.room.HabitsDao
 import com.example.habitat.domain.entities.Habit
 import com.example.habitat.domain.repository.HabitsRepository
@@ -48,11 +49,17 @@ class HabitsRepositoryImpl @Inject constructor(
 
     override suspend fun getActiveHabits(day: String, dateMillis: Long): Flow<List<Habit>> {
         val weekBounds = TimeHelper.getWeekBoundsFromMillis(dateMillis = dateMillis)
+
+        Log.d("formatted date 1", TimeHelper.formatDateFromMillis(dateMillis, TimeHelper.DateFormats.YYYY_MM_DD_HH_MM))
+        Log.d("formatted date 2", TimeHelper.formatDateFromMillis(weekBounds.second, TimeHelper.DateFormats.YYYY_MM_DD_HH_MM))
+
         return habitsDao.getActiveHabits(
             day = day,
+            selectedDateMillis = dateMillis,
             startOfTheWeek = weekBounds.first,
             endOfTheWeek = weekBounds.second
-        ).map { list -> list.map { entity -> entity.toDomain() } }
+        )
+            .map { list -> list.map { entity -> entity.toDomain() } }
     }
 
     override suspend fun updateHabitCompletedDates(id: Int, completedDates: List<Long>) {
@@ -85,5 +92,13 @@ class HabitsRepositoryImpl @Inject constructor(
             )
         }
         habitsDao.updateHabit(habit.toEntity())
+    }
+
+    override suspend fun deleteHabit(habit: Habit) {
+        val intent = Intent(context, ReminderBroadcastService::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(context, habit.id, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        alarmManager.cancel(pendingIntent)
+        habitsDao.deleteHabit(habit.toEntity())
     }
 }

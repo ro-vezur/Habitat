@@ -10,7 +10,10 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import com.example.habitat.ui.theme.responsiveLayout.localResponsiveLayout
 import com.example.habitat.ui.theme.responsiveLayout.provideResponsiveLayout
 
@@ -32,6 +35,8 @@ fun HabitatTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val view = LocalView.current
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -40,6 +45,12 @@ fun HabitatTheme(
 
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
+    }
+
+    if(!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+        }
     }
 
     CompositionLocalProvider(localResponsiveLayout provides provideResponsiveLayout()) {

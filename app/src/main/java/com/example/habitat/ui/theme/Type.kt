@@ -22,7 +22,7 @@ fun provideResponsiveTypography(): Typography {
 
 val phoneTypography = Typography(
     displayLarge = TextStyle(
-        fontSize = 38.sp,
+        fontSize = 36.sp,
         fontWeight = FontWeight.Bold,
         lineHeight = 40.sp
     ),
@@ -100,62 +100,62 @@ val phoneTypography = Typography(
 
 val tabletTypography = Typography(
     displayLarge = TextStyle(
-        fontSize = 38.sp,
+        fontSize = 46.sp,
         fontWeight = FontWeight.Bold,
         lineHeight = 46.sp
     ),
     displayMedium = TextStyle(
-        fontSize = 34.sp,
+        fontSize = 42.sp,
         fontWeight = FontWeight.Bold,
         lineHeight = 42.sp
     ),
     displaySmall = TextStyle(
-        fontSize = 30.sp,
+        fontSize = 38.sp,
         fontWeight = FontWeight.SemiBold,
         lineHeight = 38.sp
     ),
     headlineLarge = TextStyle(
-        fontSize = 28.sp,
+        fontSize = 34.sp,
         fontWeight = FontWeight.SemiBold,
         lineHeight = 34.sp
     ),
     headlineMedium = TextStyle(
-        fontSize = 26.sp,
+        fontSize = 30.sp,
         fontWeight = FontWeight.Medium,
         lineHeight = 32.sp
     ),
     headlineSmall = TextStyle(
-        fontSize = 24.sp,
+        fontSize = 26.sp,
         fontWeight = FontWeight.Medium,
         lineHeight = 30.sp
     ),
     titleLarge = TextStyle(
-        fontSize = 22.sp,
+        fontSize = 24.sp,
         fontWeight = FontWeight.Medium,
         lineHeight = 28.sp
     ),
     titleMedium = TextStyle(
-        fontSize = 20.sp,
+        fontSize = 22.sp,
         fontWeight = FontWeight.Medium,
         lineHeight = 26.sp
     ),
     titleSmall = TextStyle(
-        fontSize = 18.sp,
+        fontSize = 20.sp,
         fontWeight = FontWeight.Medium,
         lineHeight = 24.sp
     ),
     bodyLarge = TextStyle(
-        fontSize = 22.sp,
+        fontSize = 24.sp,
         fontWeight = FontWeight.Normal,
         lineHeight = 28.sp
     ),
     bodyMedium = TextStyle(
-        fontSize = 20.sp,
+        fontSize = 22.sp,
         fontWeight = FontWeight.Normal,
         lineHeight = 26.sp
     ),
     bodySmall = TextStyle(
-        fontSize = 18.sp,
+        fontSize = 20.sp,
         fontWeight = FontWeight.Normal,
         lineHeight = 24.sp
     ),

@@ -16,6 +16,8 @@ data class ResponsiveLayout(
     val paddingLarge: Dp,
     val paddingExtraLarge: Dp,
 
+    val bottomNavigationBarItemsSize: Dp,
+    val bottomNavigationBarHeight: Dp,
     val buttonHeight1: Dp,
     val buttonHeight2: Dp,
     val checkBoxSize: Dp,
@@ -23,12 +25,13 @@ data class ResponsiveLayout(
     val switcherButtonHeight: Dp,
     val switcherPadding: Dp,
     val inputTextFieldHeight: Dp,
+    val expandedInputTextFieldHeight: Dp,
     val maxDropDownMenuHeight: Dp,
     val topBarHeight: Dp,
 
     val periodicityDayCardSize: Dp,
     val addHabitScreenButtonsWidth: Dp,
-    val addHabitScreenButtonHeight: Dp,
+    val addHabitScreenButtonsHeight: Dp,
     val timePickerCarouselHeight: Dp,
     val doneTimePickerButtonWidth: Dp,
     val doneTimePickerButtonHeight: Dp,
@@ -41,6 +44,8 @@ data class ResponsiveLayout(
     val border2: Dp,
 
     val progressIndicatorBarHeight: Dp,
+    val progressCircularSize: Dp,
+    val progressCircularSizeStrokeWidth: Dp,
 
     val roundedCornerRadius1: Dp,
     val roundedCornerRadius2: Dp,

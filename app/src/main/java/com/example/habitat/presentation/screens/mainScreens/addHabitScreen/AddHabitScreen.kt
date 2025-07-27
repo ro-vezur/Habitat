@@ -5,13 +5,23 @@ import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.http.SslCertificate.restoreState
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,25 +40,31 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.GeneratingTokens
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -61,19 +77,30 @@ import com.example.habitat.ui.theme.materialThemeExtensions.responsiveLayout
 import com.example.habitat.ui.theme.materialThemeExtensions.textColor
 import java.time.DayOfWeek
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.habitat.domain.entities.Habit
 import com.example.habitat.enums.HabitsCategories
 import com.example.habitat.helpers.TimeHelper
 import com.example.habitat.presentation.ScreensRoutes
 import com.example.habitat.presentation.ScreensRoutes.Companion.mainScreensStartDestinationRoute
+import com.example.habitat.presentation.commonComponents.CustomCheckBox
+import com.example.habitat.presentation.commonComponents.CustomDialogMenu
 import com.example.habitat.presentation.commonComponents.CustomTimePickerDialog.CustomTimePickerDialog
 import com.example.habitat.presentation.commonComponents.buttons.CustomSwitcher
+import com.example.habitat.source.Source
+import com.example.habitat.ui.theme.materialThemeExtensions.iconColor
 import com.example.habitat.ui.theme.materialThemeExtensions.primaryButtonColor
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+
+private val generateHabitsMenuVisibilityAnimationSpec: FiniteAnimationSpec<IntOffset> = tween(
+    durationMillis = 420
+)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -89,13 +116,59 @@ fun AddHabitScreen(
     val permissionRequestLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted -> }
 
     var showTimePicker by remember { mutableStateOf(false) }
+    var showErrorToGenerateHabits by remember { mutableStateOf(false) }
+    var showGenerateHabitsMenu by rememberSaveable { mutableStateOf(true) }
+
+    BackHandler {
+        when {
+            showTimePicker -> { showTimePicker = false }
+            showErrorToGenerateHabits -> { showErrorToGenerateHabits = false }
+            else -> {
+                navController.popBackStack()
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)
     ) {
-        TopBar()
+        AnimatedContent(
+            targetState = showGenerateHabitsMenu,
+            transitionSpec = {
+                slideInHorizontally(
+                    animationSpec = generateHabitsMenuVisibilityAnimationSpec,
+                    initialOffsetX = { -it }
+                ).togetherWith(
+                    slideOutHorizontally(
+                        animationSpec = generateHabitsMenuVisibilityAnimationSpec,
+                        targetOffsetX = { it }
+                    )
+                )
+            }
+
+        ) { show ->
+            if(show) {
+                GenerateHabitsTopBar(
+                    onClickClose = {
+                        showGenerateHabitsMenu = false
+                    }
+                )
+            } else {
+                AddNewHabitTopBar(
+                    onClickSuggestHabits = {
+                        val currentUser = uiState.currentUser
+                        if (currentUser.name.isEmpty() || currentUser.age.toString().isEmpty() || currentUser.preferredHabits.isEmpty()) {
+                            showErrorToGenerateHabits = true
+                            return@AddNewHabitTopBar
+                        }
+
+                        showGenerateHabitsMenu = true
+                    }
+                )
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -128,7 +201,8 @@ fun AddHabitScreen(
                 },
                 placeHolderText = "Enter habit description",
                 colors = baseCustomTextFieldColors().copy(
-                    unfocusedTextColor = MaterialTheme.colorScheme.primary
+                    unfocusedTextColor = MaterialTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.primary
                 )
             )
 
@@ -213,10 +287,254 @@ fun AddHabitScreen(
             }
         )
     }
+
+    if(showErrorToGenerateHabits) {
+        CustomDialogMenu(
+            text = "Failed to generate habits." +
+                    "\nNot enough information about user" +
+                    "\nDo you want to fill information right now?",
+            onDismiss = {
+                showErrorToGenerateHabits = false
+            },
+            onAccept = {
+                navController.navigate(ScreensRoutes.FillUsersInformationScreen.route)
+            }
+        )
+    }
+
+    AnimatedVisibility(
+        visible = showGenerateHabitsMenu,
+        enter = fadeIn() + slideInVertically(initialOffsetY = { it }, animationSpec = generateHabitsMenuVisibilityAnimationSpec),
+        exit = fadeOut() + slideOutVertically(targetOffsetY = { it }, animationSpec = generateHabitsMenuVisibilityAnimationSpec)
+    ) {
+        GenerateHabitsMenu(
+            generateHabitsPrompt = uiState.generateHabitsPrompt,
+            generatedHabitsSource = uiState.generatedHabitsSource,
+            executeEvent = executeEvent,
+        )
+    }
 }
 
 @Composable
-private fun TopBar() {
+private fun GenerateHabitsMenu(
+    generateHabitsPrompt: String,
+    generatedHabitsSource: Source<List<Habit>>,
+    executeEvent: (AddHabitEvent) -> Unit,
+) {
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier
+            .padding(top = MaterialTheme.responsiveLayout.topBarHeight)
+            .fillMaxSize()
+            .clip(
+                RoundedCornerShape(
+                    topEnd = MaterialTheme.responsiveLayout.roundedCornerRadius2,
+                    topStart = MaterialTheme.responsiveLayout.roundedCornerRadius2
+                )
+            )
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = MaterialTheme.responsiveLayout.generalScreenWidthPadding)
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        CustomTextInputField(
+            modifier = Modifier
+                .padding(top = MaterialTheme.responsiveLayout.paddingExtraLarge)
+                .fillMaxWidth()
+                .height(MaterialTheme.responsiveLayout.expandedInputTextFieldHeight),
+            value = generateHabitsPrompt,
+            onValueChange = { value ->
+                executeEvent(AddHabitEvent.OnGenerateHabitsPromptChange(value))
+            },
+            placeHolderText = "Enter short prompt (Optional)",
+            singleLine = false,
+            enableLettersLimit = true,
+            showLettersCounter = true,
+            maxLetters = 80,
+            colors = baseCustomTextFieldColors().copy(
+                unfocusedTextColor = MaterialTheme.colorScheme.secondary
+            )
+        )
+
+        when(generatedHabitsSource) {
+            is Source.Error -> {
+
+            }
+            is Source.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                    content = {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                        )
+                    }
+                )
+            }
+            is Source.Success -> {
+                generatedHabitsSource.data?.let { generatedHabits ->
+                    Button(
+                        modifier = Modifier
+                            .padding(top = MaterialTheme.responsiveLayout.paddingMedium)
+                            .fillMaxWidth(0.9f)
+                            .height(MaterialTheme.responsiveLayout.buttonHeight1),
+                        shape = RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryButtonColor
+                        ),
+                        onClick = {
+                            executeEvent(AddHabitEvent.GenerateHabits)
+                        }
+                    ) {
+                        Text(
+                            text = "Regenerate Habits",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.textColor
+                        )
+                    }
+
+                    generatedHabits.forEach { habit ->
+                        GeneratedHabitCard(
+                            modifier = Modifier
+                                .padding(top = MaterialTheme.responsiveLayout.spacingLarge)
+                                .fillMaxWidth()
+                                .border(
+                                    width = MaterialTheme.responsiveLayout.border1,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1)
+                                )
+                                .padding(MaterialTheme.responsiveLayout.paddingSmall),
+                            habit = habit,
+                        )
+                    }
+                }
+            }
+            is Source.Unknown -> {
+                Button(
+                    modifier = Modifier
+                        .padding(top = MaterialTheme.responsiveLayout.paddingMedium)
+                        .fillMaxWidth(0.9f)
+                        .height(MaterialTheme.responsiveLayout.buttonHeight1),
+                    shape = RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryButtonColor
+                    ),
+                    onClick = {
+                        executeEvent(AddHabitEvent.GenerateHabits)
+                    }
+                ) {
+                    Text(
+                        text = "Generate Habits",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.textColor
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GeneratedHabitCard(
+    modifier: Modifier = Modifier,
+    habit: Habit
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = habit.description,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.W500
+            )
+
+            Row(
+                modifier = Modifier
+                    .padding(top = MaterialTheme.responsiveLayout.spacingMedium),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.responsiveLayout.paddingSmall)
+            ) {
+                habit.category?.let { category ->
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1))
+                            .background(MaterialTheme.colorScheme.secondary)
+                            .padding(MaterialTheme.responsiveLayout.spacingSmall)
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .size(MaterialTheme.responsiveLayout.iconSmall),
+                            imageVector = category.icon,
+                            contentDescription = "category icon",
+                            tint = MaterialTheme.colorScheme.iconColor
+                        )
+                    }
+                }
+
+                Text(
+                    modifier = Modifier,
+                    text = TimeHelper.formatDateFromMillis(millis = habit.remindTime, dateFormat = TimeHelper.DateFormats.HH_MM),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.W500
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GenerateHabitsTopBar(
+    onClickClose: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .padding(
+                start = MaterialTheme.responsiveLayout.generalScreenWidthPadding,
+                end = MaterialTheme.responsiveLayout.generalScreenWidthPadding,
+            )
+            .height(MaterialTheme.responsiveLayout.topBarHeight)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(horizontal = MaterialTheme.responsiveLayout.paddingSmall),
+            text = "Generate Habits",
+            style = MaterialTheme.typography.displaySmall,
+            color = MaterialTheme.colorScheme.textColor,
+        )
+
+        Spacer(Modifier.weight(1f))
+
+        IconButton(
+            modifier = Modifier,
+            colors = IconButtonDefaults.iconButtonColors(),
+            onClick = {
+                onClickClose()
+            },
+        ) {
+            Icon(
+                modifier = Modifier
+                    .size(MaterialTheme.responsiveLayout.iconLarge),
+                imageVector = Icons.Default.Close,
+                contentDescription = "close",
+                tint = MaterialTheme.colorScheme.iconColor
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddNewHabitTopBar(
+    onClickSuggestHabits: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .padding(
@@ -235,6 +553,26 @@ private fun TopBar() {
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.textColor,
         )
+
+        Spacer(Modifier.weight(1f))
+
+        IconButton(
+            modifier = Modifier,
+            colors = IconButtonDefaults.iconButtonColors(
+                containerColor = MaterialTheme.colorScheme.secondary
+            ),
+            onClick = {
+                onClickSuggestHabits()
+            },
+        ) {
+            Icon(
+                modifier = Modifier
+                    .size(MaterialTheme.responsiveLayout.iconMedium),
+                imageVector = Icons.Default.GeneratingTokens,
+                contentDescription = "generate habits",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
     }
 }
 
@@ -344,7 +682,7 @@ fun SelectHabitCategoryButton(
                     type = MenuAnchorType.PrimaryNotEditable
                 )
                 .width(MaterialTheme.responsiveLayout.addHabitScreenButtonsWidth)
-                .height(MaterialTheme.responsiveLayout.addHabitScreenButtonHeight)
+                .height(MaterialTheme.responsiveLayout.addHabitScreenButtonsHeight)
                 .border(
                     width = MaterialTheme.responsiveLayout.border1,
                     color = MaterialTheme.colorScheme.primary,
@@ -397,7 +735,7 @@ fun SelectHabitCategoryButton(
                     DropdownMenuItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1))
-                            .height(MaterialTheme.responsiveLayout.addHabitScreenButtonHeight)
+                            .height(MaterialTheme.responsiveLayout.addHabitScreenButtonsHeight)
                             .background(MaterialTheme.colorScheme.primary),
                         text = {
                             Text(
@@ -448,7 +786,7 @@ fun SetRemindTime(
         modifier = Modifier
             .padding(top = MaterialTheme.responsiveLayout.paddingSmall)
             .width(MaterialTheme.responsiveLayout.addHabitScreenButtonsWidth)
-            .height(MaterialTheme.responsiveLayout.addHabitScreenButtonHeight)
+            .height(MaterialTheme.responsiveLayout.addHabitScreenButtonsHeight)
             .border(
                 width = MaterialTheme.responsiveLayout.border1,
                 color = MaterialTheme.colorScheme.primary,

@@ -10,5 +10,7 @@ sealed class AddHabitEvent {
     class SelectHabitCategory(val habitCategory: HabitsCategories): AddHabitEvent()
     class SetRemindTime(val hours: Int, val minutes: Int): AddHabitEvent()
     class ChangeWeekRepetitionValue(val value: Boolean): AddHabitEvent()
+    class OnGenerateHabitsPromptChange(val input: String): AddHabitEvent()
+    object GenerateHabits: AddHabitEvent()
     object AddHabit: AddHabitEvent()
 }

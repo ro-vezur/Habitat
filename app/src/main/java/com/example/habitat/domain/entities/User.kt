@@ -4,9 +4,9 @@ import com.example.habitat.data.entities.UserEntity
 import com.example.habitat.enums.HabitsCategories
 
 data class User(
-    val name: String,
+    val name: String = "",
     val age: Int = 0,
-    val livingPlace: String,
+    val livingPlace: String = "",
     val preferredHabits: List<HabitsCategories> = emptyList()
 ) {
     fun toEntity(): UserEntity {

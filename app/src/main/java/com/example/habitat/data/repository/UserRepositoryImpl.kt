@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.habitat.data.entities.UserEntity
+import com.example.habitat.domain.entities.User
 import com.example.habitat.domain.repository.UserRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -26,13 +27,13 @@ class UserRepositoryImpl @Inject constructor(
         val IS_COMPLETED_REGISTRATION_KEY = booleanPreferencesKey("is_completed_registration")
     }
 
-    override val currentUser: Flow<UserEntity> =
+    override val currentUser: Flow<User> =
         context.dataStore.data.map { preferences ->
             try {
-                Json.decodeFromString<UserEntity>(preferences[USER_KEY] ?: "")
+                Json.decodeFromString<UserEntity>(preferences[USER_KEY] ?: "").toDomain()
             } catch (e: Exception) {
                 e.printStackTrace()
-                UserEntity()
+                User()
             }
         }
 

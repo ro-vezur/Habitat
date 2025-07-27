@@ -1,5 +1,6 @@
 package com.example.habitat.helpers
 
+import android.util.Log
 import com.example.habitat.presentation.screens.mainScreens.StatisticsScreen.habitStatisticsHelper.StatsPeriod
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
@@ -7,12 +8,16 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
+import java.time.temporal.TemporalQueries.localDate
+import java.time.temporal.TemporalQueries.zone
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 object TimeHelper {
 
@@ -80,7 +85,13 @@ object TimeHelper {
         return local.format(DateTimeFormatter.ofPattern(DateFormats.HH_MM))
     }
 
-    fun convertHoursAndMinutesIntoMillis(hours: Int,minutes: Int): Long = (hours * 60 * 60 * 1000L) + (minutes * 60 * 1000L)
+    fun convertHoursAndMinutesIntoMillis(dateMillis: Long,hours: Int,minutes: Int): Long {
+        val zone = ZoneId.systemDefault()
+        val date = Instant.ofEpochMilli(dateMillis).atZone(zone).toLocalDate()
+
+        return ZonedDateTime.of(date, LocalTime.of(hours, minutes), ZoneId.systemDefault())
+            .toInstant().toEpochMilli()
+    }
 
     fun extractHoursFromMillis(millis: Long): Int {
         val zone = ZoneId.systemDefault()
@@ -97,14 +108,13 @@ object TimeHelper {
     }
 
     fun extractHoursAndMinutesInMillis(millis: Long): Long {
-        val calendar = Calendar.getInstance().apply {
-            timeInMillis = millis
-        }
+        val zone = ZoneId.systemDefault()
+        val localDate = Instant.ofEpochMilli(millis).atZone(zone)
 
-        val hours = calendar.get(Calendar.HOUR_OF_DAY)
-        val minutes = calendar.get(Calendar.MINUTE)
+        val hours = localDate.hour
+        val minutes =localDate.minute
 
-        return (hours * 60 * 60 * 1000L) + (minutes * 60 * 1000L)
+        return TimeUnit.HOURS.toMillis(hours.toLong()) + TimeUnit.MINUTES.toMillis(minutes.toLong())
     }
 
     fun getStartOfDayFromMillis(millis: Long): Long {

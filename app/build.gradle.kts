@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.konan.properties.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,6 +21,18 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val keystoreFile = project.rootProject.file("local.properties")
+        val properties = Properties()
+        properties.load(keystoreFile.inputStream())
+
+        val geminiApiKey = properties.getProperty("geminiApiKey") ?: ""
+
+        buildConfigField(
+            type = "String",
+            name = "geminiApiKey",
+            value = geminiApiKey
+        )
     }
 
     buildTypes {
@@ -30,6 +44,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -39,6 +54,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -72,4 +88,5 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.accompanist.permissions)
     implementation(libs.datastore)
+    implementation(libs.gemini)
 }

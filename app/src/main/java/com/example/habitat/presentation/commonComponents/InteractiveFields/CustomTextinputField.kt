@@ -1,11 +1,13 @@
 package com.example.habitat.presentation.commonComponents.InteractiveFields
 
+import android.R.attr.top
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +26,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.habitat.ui.theme.HabitatTheme
 import com.example.habitat.ui.theme.materialThemeExtensions.responsiveLayout
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
 import com.example.habitat.ui.theme.materialThemeExtensions.textColorSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,8 +36,13 @@ fun CustomTextInputField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
+    style: TextStyle = MaterialTheme.typography.headlineSmall,
     placeHolderText: String = "",
     colors: TextFieldColors = baseCustomTextFieldColors(),
+    singleLine: Boolean = true,
+    enableLettersLimit: Boolean = false,
+    showLettersCounter: Boolean = false,
+    maxLetters: Int = Int.MAX_VALUE,
     keyboardOptions: KeyboardOptions = KeyboardOptions()
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -42,13 +51,16 @@ fun CustomTextInputField(
     BasicTextField(
         modifier = modifier,
         value = value,
-        onValueChange = { newValue -> onValueChange(newValue) },
-        textStyle = MaterialTheme.typography.headlineSmall.copy(
+        onValueChange = { newValue ->
+            if(newValue.length > maxLetters) return@BasicTextField
+            onValueChange(newValue)
+                        },
+        textStyle = style.copy(
             color = if(isFocused) colors.focusedTextColor else colors.unfocusedTextColor
         ),
-        singleLine = true,
+        singleLine = singleLine,
         keyboardOptions = keyboardOptions,
-        interactionSource = interactionSource
+        interactionSource = interactionSource,
     ) { innerTextField ->
         TextFieldDefaults.DecorationBox(
             value = value,
@@ -58,12 +70,25 @@ fun CustomTextInputField(
             visualTransformation = VisualTransformation.None,
             interactionSource = interactionSource,
             contentPadding = PaddingValues(
-                start = MaterialTheme.responsiveLayout.spacingMedium
+                start = MaterialTheme.responsiveLayout.spacingMedium,
             ),
+            supportingText = {
+                if(showLettersCounter) {
+                    val text = if(enableLettersLimit) "${value.length}/$maxLetters" else "${value.length}"
+
+                    Text(
+                        modifier = Modifier
+                            .padding(top = MaterialTheme.responsiveLayout.spacingSmall),
+                        text = text,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if(isFocused) colors.focusedTextColor else colors.unfocusedTextColor
+                    )
+                }
+            },
             placeholder = {
                 Text(
                     text = placeHolderText,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = style,
                     color = if(isFocused) colors.focusedTextColor else colors.unfocusedTextColor
                 )
             },
@@ -94,10 +119,13 @@ private fun CustomTextInputFieldPreview() {
             CustomTextInputField(
                 modifier = Modifier
                     .height(MaterialTheme.responsiveLayout.inputTextFieldHeight),
-                value = "",
+                value = "Some text",
                 onValueChange = {
 
                 },
+                showLettersCounter = true,
+                enableLettersLimit = true,
+                maxLetters = 40,
                 placeHolderText = "Firstly, what's your name?"
             )
         }

@@ -1,5 +1,6 @@
 package com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habitat.domain.entities.Habit
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.lang.System.currentTimeMillis
 import java.time.DayOfWeek
 
 @HiltViewModel(assistedFactory = DetailedHabitViewModel.ViewModelAssistedFactory::class)
@@ -67,12 +69,18 @@ class DetailedHabitViewModel @AssistedInject constructor(
     }
 
     private fun changeRemindTime(hours: Int, minutes: Int) = viewModelScope.launch {
-        val hoursAndMinutesInMillis = TimeHelper.convertHoursAndMinutesIntoMillis(hours,minutes)
+
 
         _selectedHabitFlow.update { habit ->
             val startOfDayInMillis = TimeHelper.getStartOfDayFromMillis(habit.remindTime)
 
-            habit.copy(remindTime = hoursAndMinutesInMillis + startOfDayInMillis)
+            val remindTime = TimeHelper.convertHoursAndMinutesIntoMillis(
+                dateMillis = TimeHelper.getStartOfDayFromMillis(currentTimeMillis()),
+                hours = hours,
+                minutes = minutes
+            )
+
+            habit.copy(remindTime = remindTime)
         }
     }
 

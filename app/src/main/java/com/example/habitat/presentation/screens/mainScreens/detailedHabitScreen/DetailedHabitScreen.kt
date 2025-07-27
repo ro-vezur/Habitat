@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -67,14 +66,12 @@ import androidx.navigation.compose.rememberNavController
 import com.example.habitat.domain.entities.Habit
 import com.example.habitat.enums.HabitsCategories
 import com.example.habitat.helpers.TimeHelper
-import com.example.habitat.presentation.ScreensRoutes
+import com.example.habitat.presentation.commonComponents.CustomDialogMenu
 import com.example.habitat.presentation.commonComponents.CustomTimePickerDialog.CustomTimePickerDialog
 import com.example.habitat.presentation.commonComponents.InteractiveFields.CustomTextInputField
 import com.example.habitat.presentation.commonComponents.InteractiveFields.baseCustomTextFieldColors
 import com.example.habitat.presentation.commonComponents.buttons.CustomSwitcher
 import com.example.habitat.presentation.commonComponents.buttons.TurnBackButton
-import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitScreen
-import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitUiState
 import com.example.habitat.ui.theme.HabitatTheme
 import com.example.habitat.ui.theme.materialThemeExtensions.iconColor
 import com.example.habitat.ui.theme.materialThemeExtensions.primaryButtonColor
@@ -219,7 +216,8 @@ fun DetailedHabitScreen(
     }
 
     if(showDialogToDeleteHabit) {
-        DialogToDeleteHabit(
+        CustomDialogMenu(
+            text = "Are you sure want to fully delete this habit?\n(Habit will be deleted from all dates)",
             onDismiss = {
                 showDialogToDeleteHabit = false
             },
@@ -277,78 +275,6 @@ private fun TopBar(
                 contentDescription = "delete",
                 tint = MaterialTheme.colorScheme.primary
             )
-        }
-    }
-}
-
-@Composable
-private fun DialogToDeleteHabit(
-    onDismiss: () -> Unit,
-    onAccept: () -> Unit,
-) {
-    Dialog(
-        onDismissRequest = onDismiss,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1))
-                .background(MaterialTheme.colorScheme.background),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                modifier = Modifier
-                    .padding(top = MaterialTheme.responsiveLayout.paddingMedium)
-                    .fillMaxWidth(0.9f),
-                text = "Are you sure want to fully delete this habit?\n(Habit will be deleted from all dates)",
-                style = MaterialTheme.typography.displaySmall,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = MaterialTheme.responsiveLayout.paddingSmall, vertical = MaterialTheme.responsiveLayout.paddingMedium),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.responsiveLayout.spacingLarge)
-            ) {
-                TextButton(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(MaterialTheme.responsiveLayout.buttonHeight1),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryButtonColor
-                    ),
-                    shape = RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius2),
-                    onClick = {
-                        onAccept()
-                    }
-                ) {
-                    Text(
-                        text = "Yes",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.textColor
-                    )
-                }
-
-                TextButton(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(MaterialTheme.responsiveLayout.buttonHeight1),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryButtonColor
-                    ),
-                    shape = RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius2),
-                    onClick = {
-                        onDismiss()
-                    }
-                ) {
-                    Text(
-                        text = "No",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.textColor
-                    )
-                }
-            }
         }
     }
 }
@@ -437,7 +363,7 @@ private fun SetPeriodicity(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectHabitCategoryButton(
+private fun SelectHabitCategoryButton(
     modifier: Modifier = Modifier,
     onSelect: (HabitsCategories) -> Unit,
     selectedCategory: HabitsCategories?,
@@ -461,7 +387,7 @@ fun SelectHabitCategoryButton(
                     type = MenuAnchorType.PrimaryNotEditable
                 )
                 .width(MaterialTheme.responsiveLayout.addHabitScreenButtonsWidth)
-                .height(MaterialTheme.responsiveLayout.addHabitScreenButtonHeight)
+                .height(MaterialTheme.responsiveLayout.addHabitScreenButtonsHeight)
                 .border(
                     width = MaterialTheme.responsiveLayout.border1,
                     color = MaterialTheme.colorScheme.primary,
@@ -514,7 +440,7 @@ fun SelectHabitCategoryButton(
                     DropdownMenuItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(MaterialTheme.responsiveLayout.roundedCornerRadius1))
-                            .height(MaterialTheme.responsiveLayout.addHabitScreenButtonHeight)
+                            .height(MaterialTheme.responsiveLayout.addHabitScreenButtonsHeight)
                             .background(MaterialTheme.colorScheme.primary),
                         text = {
                             Text(
@@ -565,7 +491,7 @@ fun SetRemindTime(
         modifier = Modifier
             .padding(top = MaterialTheme.responsiveLayout.paddingSmall)
             .width(MaterialTheme.responsiveLayout.addHabitScreenButtonsWidth)
-            .height(MaterialTheme.responsiveLayout.addHabitScreenButtonHeight)
+            .height(MaterialTheme.responsiveLayout.addHabitScreenButtonsHeight)
             .border(
                 width = MaterialTheme.responsiveLayout.border1,
                 color = MaterialTheme.colorScheme.primary,

@@ -1,6 +1,8 @@
 package com.example.habitat.presentation.screens.mainScreens.homeScreen
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -37,15 +39,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.habitat.datePickerVisibilityAnimationSpec
 import com.example.habitat.domain.entities.Habit
 import com.example.habitat.enums.HabitsCategories
 import com.example.habitat.helpers.TimeHelper
@@ -56,6 +59,9 @@ import com.example.habitat.ui.theme.materialThemeExtensions.iconColor
 import com.example.habitat.ui.theme.materialThemeExtensions.responsiveLayout
 import com.example.habitat.ui.theme.materialThemeExtensions.textColor
 
+private val datePickerVisibilityAnimationSpec: FiniteAnimationSpec<IntOffset> = tween(
+    durationMillis = 350
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +75,7 @@ fun HomeScreen(
         yearRange = IntRange(start = TimeHelper.getCurrentYear() - 25, endInclusive = TimeHelper.getCurrentYear() + 25)
     )
 
-    var showDatePicker by remember { mutableStateOf(false) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(key1 = datePickerState.selectedDateMillis) {
         executeEvent(HomeEvent.SelectNewDate(newDateMillis = datePickerState.selectedDateMillis ?: 0))
@@ -184,7 +190,7 @@ private fun HabitsList(
     habits: List<Habit>,
     updateHabitCompletedDates: (Habit) -> Unit
 ) {
-    val sortedHabits = remember(habits) { habits.sortedBy { it.timeOfCreation } }
+    val sortedHabits = remember(habits) { habits.sortedByDescending { TimeHelper.extractHoursAndMinutesInMillis(it.remindTime) } }
 
     Column(
         modifier = modifier

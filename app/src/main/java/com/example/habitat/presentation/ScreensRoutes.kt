@@ -21,10 +21,11 @@ sealed class ScreensRoutes(val route: String) {
 
     data object DetailedHabit: ScreensRoutes(route = "${Home.route}/{habit}") {
         fun createRoute(habit: Habit): String {
-
             return route.replace("{habit}", base64EncodeJsonObjectToString(habit))
         }
     }
+
+    data object FillUsersInformationScreen: ScreensRoutes(route = "FillUsersInformationScreen")
 
     companion object {
         val mainScreensStartDestinationRoute: String = Home.route

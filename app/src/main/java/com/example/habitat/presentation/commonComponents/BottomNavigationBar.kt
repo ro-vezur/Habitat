@@ -5,12 +5,18 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -46,7 +52,6 @@ private val routesThatNotDisplaysBottomNavigationBar = listOf<String>(
 
 @Composable
 fun BottomNavigationBar(
-    modifier: Modifier = Modifier,
     navController: NavController,
     ) {
 
@@ -65,21 +70,25 @@ fun BottomNavigationBar(
                 thickness = MaterialTheme.responsiveLayout.border1
             )
 
-            NavigationBar(
+            Row (
                 modifier = Modifier
-                    .fillMaxWidth(0.8f),
-                containerColor = MaterialTheme.colorScheme.background
+                    .height(MaterialTheme.responsiveLayout.bottomNavigationBarHeight)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 BottomNavigationBarItems.entries.forEach { item ->
                     val isSelected = remember(currentRoute.contains(item.route)) {
                         currentRoute.contains(item.route)
                     }
 
-                    NavigationBarItem(
-                        selected = isSelected,
+                    IconButton(
+                        modifier = Modifier
+                            .size(MaterialTheme.responsiveLayout.bottomNavigationBarItemsSize),
                         onClick = {
                             navController.navigate(item.route) {
-                                popUpTo(ScreensRoutes.Home.route) {
+                                popUpTo(ScreensRoutes.mainScreensStartDestinationRoute) {
                                     saveState = true
                                 }
 
@@ -87,20 +96,15 @@ fun BottomNavigationBar(
                                 restoreState = true
                             }
                         },
-                        icon = {
-                            Icon(
-                                modifier = Modifier
-                                    .size(MaterialTheme.responsiveLayout.iconLarge),
-                                imageVector = item.icon,
-                                contentDescription = "bottom navigation bar icon"
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            unselectedIconColor = MaterialTheme.colorScheme.secondary,
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = androidx.compose.ui.graphics.Color.Transparent
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .size(MaterialTheme.responsiveLayout.iconLarge),
+                            imageVector = item.icon,
+                            contentDescription = "bottom navigation bar icon",
+                            tint = if(isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                         )
-                    )
+                    }
                 }
             }
         }

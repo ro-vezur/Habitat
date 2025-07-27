@@ -21,6 +21,7 @@ import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHa
 import com.example.habitat.presentation.screens.mainScreens.addHabitScreen.AddHabitViewModel
 import com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen.DetailedHabitViewModel
 import com.example.habitat.presentation.screens.mainScreens.detailedHabitScreen.DetailedHabitScreen
+import com.example.habitat.presentation.screens.mainScreens.fillUserInformationScreen.FillUserInformationScreen
 import com.example.habitat.presentation.screens.mainScreens.homeScreen.HomeScreen
 import com.example.habitat.presentation.screens.mainScreens.homeScreen.HomeViewModel
 import com.example.habitat.presentation.screens.splashScreen.SplashScreen
@@ -137,6 +138,10 @@ fun NavigationHost(
                     executeEvent = detailedHabitViewModel::invoke
                 )
             }
+        }
+
+        composable(ScreensRoutes.FillUsersInformationScreen.route) { backStackEntry ->
+            FillUserInformationScreen()
         }
     }
 }

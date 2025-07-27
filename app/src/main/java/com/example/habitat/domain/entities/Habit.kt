@@ -31,6 +31,25 @@ data class Habit(
         )
     }
 
+    fun getNextRemindTime(): Long? {
+        val indexOfCurrentDayOfWeek = periodicity.indexOf(TimeHelper.getCurrentDayOfWeekObject())
+        val nextDayIndex = indexOfCurrentDayOfWeek + 1
+        val extractedHours = TimeHelper.extractHoursFromMillis(remindTime)
+        val extractMinutes = TimeHelper.extractMinutesFromMillis(remindTime)
+
+        return when {
+            nextDayIndex == periodicity.size && !repeatEveryWeek -> null
+            nextDayIndex == periodicity.size && repeatEveryWeek -> {
+                val nextWeekDayStarterMillis = TimeHelper.getNextWeekdayStartMillis(periodicity.first())
+                TimeHelper.convertHoursAndMinutesIntoMillis(nextWeekDayStarterMillis,extractedHours,extractMinutes)
+            }
+            else -> {
+                val nextDayStarterMillis = TimeHelper.getStartOfWeekdayMillis(periodicity[nextDayIndex])
+                TimeHelper.convertHoursAndMinutesIntoMillis(nextDayStarterMillis,extractedHours,extractMinutes)
+            }
+        }
+    }
+
     companion object {
         fun getNextRemindTime(remindTime: Long, repeatEveryWeek: Boolean, periodicity: List<DayOfWeek>): Long? {
             val indexOfCurrentDayOfWeek = periodicity.indexOf(TimeHelper.getCurrentDayOfWeekObject())

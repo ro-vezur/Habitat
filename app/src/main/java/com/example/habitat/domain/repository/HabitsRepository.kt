@@ -1,6 +1,8 @@
 package com.example.habitat.domain.repository
 
 import com.example.habitat.domain.entities.Habit
+import com.example.habitat.domain.entities.User
+import com.example.habitat.source.Source
 import kotlinx.coroutines.flow.Flow
 
 interface HabitsRepository {
@@ -16,4 +18,6 @@ interface HabitsRepository {
     suspend fun updateHabit(habit: Habit)
 
     suspend fun deleteHabit(habit: Habit)
+
+    suspend fun generateHabits(user: User, additionalPrompt: String): Flow<Source<List<Habit>>>
 }

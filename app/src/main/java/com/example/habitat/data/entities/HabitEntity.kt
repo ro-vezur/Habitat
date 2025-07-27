@@ -5,8 +5,10 @@ import androidx.room.PrimaryKey
 import com.example.habitat.HABITS_LOCAL_DATA_BASE_NAME
 import com.example.habitat.domain.entities.Habit
 import com.example.habitat.enums.HabitsCategories
+import kotlinx.serialization.Serializable
 import java.time.DayOfWeek
 
+@Serializable
 @Entity(tableName = HABITS_LOCAL_DATA_BASE_NAME)
 data class HabitEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
